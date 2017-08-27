@@ -1,11 +1,9 @@
 package com.liminghuang.search;
 
-import sun.security.util.Length;
-
 /**
  * ProjectName: example
  * PackageName: com.liminghuang
- * Description:
+ * Description: 有序数组的二分查找
  * <p>
  * CreateTime: 2017/8/8 20:19
  * Modifier: Adaministrator

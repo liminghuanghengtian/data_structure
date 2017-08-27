@@ -5,7 +5,7 @@ import java.util.Stack;
 /**
  * ProjectName: example
  * PackageName: com.liminghuang
- * Description: 两个栈实现队列的数据结构
+ * Description: 基于两个栈结构实现队列基本功能
  * <p>
  * CreateTime: 2017/8/15 22:33
  * Modifier: Adaministrator
@@ -16,34 +16,35 @@ import java.util.Stack;
  */
 public class StackQueue {
     
-    private Stack<Integer> stack1;
-    private Stack<Integer> stack2;
+    private Stack<Integer> originStack;
+    private Stack<Integer> reversalStack;
     
     protected StackQueue() {
-        stack1 = new Stack<Integer>();
-        stack2 = new Stack<Integer>();
+        originStack = new Stack<>();
+        reversalStack = new Stack<>();
     }
     
     public void enqueue(Integer e) {
-        stack1.push(e);
+        originStack.push(e);
     }
     
     public Integer dequeue() {
-        if (stack2.isEmpty()) {
-            while (!stack1.empty()) {
-                stack2.push(stack1.pop());
+        // 当倒叙栈空时，将原栈数据倒入到倒叙栈
+        if (reversalStack.isEmpty()) {
+            while (!originStack.empty()) {
+                reversalStack.push(originStack.pop());
             }
         }
-        System.out.println("stack2: " + stack2.toString());
-        return stack2.pop();
+        System.out.println("reversalStack: " + reversalStack.toString());
+        return reversalStack.pop();
     }
     
     public String toString() {
-        return stack2.toString();
+        return reversalStack.toString();
     }
     
     public boolean isEmpty() {
-        return stack2.isEmpty();
+        return reversalStack.isEmpty();
     }
     
     public static void main(String[] args) {

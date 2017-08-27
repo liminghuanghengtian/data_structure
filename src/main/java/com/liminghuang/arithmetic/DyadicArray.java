@@ -1,4 +1,4 @@
-package com.liminghuang;
+package com.liminghuang.arithmetic;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * ProjectName: example
  * PackageName: com.liminghuang
- * Description:
+ * Description: 一个M*N的二维数组，如果其中一个元素为0，就将其所在的行列全部置0
  * <p>
  * CreateTime: 2017/8/20 17:03
  * Modifier: Adaministrator
@@ -16,7 +16,7 @@ import java.util.List;
  *
  * @author Adaministrator
  */
-public class ArrayTest {
+public class DyadicArray {
     static class Location {
         private int row;
         private int col;
@@ -44,7 +44,7 @@ public class ArrayTest {
     }
     
     public static void main(String[] args) {
-        final int[][] array = {
+        final int[][] originArray = {
                 {1, 0, 3, 4},
                 {0, 2, 9, 0},
                 {3, 4, 5, 5},
@@ -53,7 +53,7 @@ public class ArrayTest {
         List<Location> locations = new ArrayList<Location>();
         
         int rowNo = 0;
-        for (int[] row : array) {
+        for (int[] row : originArray) {
             int colNo = 0;
             for (int element : row) {
                 if (element == 0) {
@@ -64,9 +64,9 @@ public class ArrayTest {
             rowNo++;
         }
         
-        int[][] result = array;
-        for (int row = 0; row < result.length; row++) {
-            for (int col = 0; col < result[row].length; col++) {
+        int[][] ouputArray = originArray;
+        for (int row = 0; row < ouputArray.length; row++) {
+            for (int col = 0; col < ouputArray[row].length; col++) {
                 boolean isExist = false;
                 for (Location location : locations) {
                     if (location.getRow() == row || location.getCol() == col) {
@@ -76,11 +76,11 @@ public class ArrayTest {
                 }
                 
                 if (isExist) {
-                    result[row][col] = 0;
+                    ouputArray[row][col] = 0;
                 }
             }
         }
         
-        System.out.println(Arrays.deepToString(result));
+        System.out.println(Arrays.deepToString(ouputArray));
     }
 }

@@ -5,7 +5,7 @@ import java.util.LinkedHashMap;
 /**
  * ProjectName: example
  * PackageName: com.liminghuang.cache
- * Description:
+ * Description: Cache的实现
  * <p>
  * CreateTime: 2017/7/25 21:01
  * Modifier: Adaministrator
