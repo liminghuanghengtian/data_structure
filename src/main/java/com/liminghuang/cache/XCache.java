@@ -2,10 +2,12 @@ package com.liminghuang.cache;
 
 import java.util.LinkedHashMap;
 
+import sun.misc.LRUCache;
+
 /**
  * ProjectName: example
  * PackageName: com.liminghuang.cache
- * Description: Cache的实现
+ * Description: Cache的简单实现
  * <p>
  * CreateTime: 2017/7/25 21:01
  * Modifier: Adaministrator
@@ -19,7 +21,7 @@ public class XCache<T> implements ICache<T> {
     transient LinkedHashMap<String, Object> cacheMap;
     
     public XCache() {
-        cacheMap = new LinkedHashMap<String, Object>();
+        cacheMap = new LinkedHashMap<>();
     }
     
     public void put(String key, T t) {

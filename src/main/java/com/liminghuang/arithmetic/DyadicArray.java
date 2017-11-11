@@ -69,6 +69,7 @@ public class DyadicArray {
             for (int col = 0; col < ouputArray[row].length; col++) {
                 boolean isExist = false;
                 for (Location location : locations) {
+                    // 当前位置所在行或列只有有零，就置为零
                     if (location.getRow() == row || location.getCol() == col) {
                         isExist = true;
                         break;
