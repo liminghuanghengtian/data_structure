@@ -19,7 +19,7 @@ import java.util.Stack;
  *
  * @author Adaministrator
  */
-public class FirstUnRepetIndexSearch {
+public class FirstUnRepeatIndexSearch {
     
     public static void main(String[] args) {
         String target = "abecdebadecfgbhd";
