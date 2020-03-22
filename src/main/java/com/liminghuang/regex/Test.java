@@ -1,4 +1,4 @@
-package com.liminghuang;
+package com.liminghuang.regex;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
