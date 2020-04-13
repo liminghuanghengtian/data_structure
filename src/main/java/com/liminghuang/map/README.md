@@ -1,4 +1,12 @@
 # HashMap(java8)
+## 特性
+1. 默认初始长度为16，数组长度必须是2的幂（为了key映射到index时候的hash算法更高效，通过（n-1）&hash值的位运算，等效于取模），扩容是之前容量的两倍
+2. hash算法结果是均匀的，即能保证index较为均匀；java8的hash算法通过key.hashcode，将其高16位和低16位做异或（h ^ h>>>16），这个综合考虑了速度，作用和质量
+3. java7 hash碰撞通过链表实现，总是添加到链头（设计者认为后插入的数据被查找的可能性大）；java8在链表的长度超过8，将链表转为红黑树(查找效率快，时间复杂度O（logN）)，无法解决hash碰撞的问题，通过红黑树优秀的查找性能来解决问题
+4. 扩容是创建新长度数组，然后将原数组内容重新计算index后放入新数组；java8 仅重新计算index，省略重新hash过程，因为hash算法所得hash值不变，所以新index要么等于原index，要么原index加上原长；resize的过程，均匀的把之前的冲突的节点分散到新的bucket了
+5. 高并发下出现链表的环形结构。当调用Get查找一个不存在的Key，而这个Key的Hash结果恰好在index位置的时候，由于位置index处带有环形链表，所以程序将会进入死循环（链表中不存元素，一直遍历）！
+6. 
+
 ## put的实现
 put函数大致的思路为：
 1. 对key的hashCode()做hash，然后再计算index;
@@ -105,7 +113,10 @@ final void treeifyBin(Node<K,V>[] tab, int hash) {
             hd.treeify(tab);
     }
 }
-    
+```
+
+## 如何扩容？
+```
 /**
  * 扩容
  */
@@ -115,10 +126,12 @@ final Node<K,V>[] resize() {
     int oldThr = threshold;
     int newCap, newThr = 0;
     if (oldCap > 0) {
+        // 超过最大值就不再扩充了，就只好随你碰撞去吧
         if (oldCap >= MAXIMUM_CAPACITY) {
             threshold = Integer.MAX_VALUE;
             return oldTab;
         }
+        // 没超过最大值，就扩充为原来的2倍
         else if ((newCap = oldCap << 1) < MAXIMUM_CAPACITY &&
                  oldCap >= DEFAULT_INITIAL_CAPACITY)
             newThr = oldThr << 1; // double threshold
@@ -129,6 +142,8 @@ final Node<K,V>[] resize() {
         newCap = DEFAULT_INITIAL_CAPACITY;
         newThr = (int)(DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);
     }
+    
+    // 计算新的resize上限
     if (newThr == 0) {
         float ft = (float)newCap * loadFactor;
         newThr = (newCap < MAXIMUM_CAPACITY && ft < (float)MAXIMUM_CAPACITY ?
@@ -139,10 +154,11 @@ final Node<K,V>[] resize() {
         Node<K,V>[] newTab = (Node<K,V>[])new Node[newCap];
     table = newTab;
     if (oldTab != null) {
+        // 把每个bucket都移动到新的buckets中
         for (int j = 0; j < oldCap; ++j) {
             Node<K,V> e;
             if ((e = oldTab[j]) != null) {
-                oldTab[j] = null;
+                oldTab[j] = null;// 原hash桶清理
                 if (e.next == null)
                     newTab[e.hash & (newCap - 1)] = e;
                 else if (e instanceof TreeNode)
@@ -153,6 +169,7 @@ final Node<K,V>[] resize() {
                     Node<K,V> next;
                     do {
                         next = e.next;
+                        // 原索引
                         if ((e.hash & oldCap) == 0) {
                             if (loTail == null)
                                 loHead = e;
@@ -160,6 +177,7 @@ final Node<K,V>[] resize() {
                                 loTail.next = e;
                             loTail = e;
                         }
+                        // 原索引+oldCap
                         else {
                             if (hiTail == null)
                                 hiHead = e;
@@ -168,10 +186,12 @@ final Node<K,V>[] resize() {
                             hiTail = e;
                         }
                     } while ((e = next) != null);
+                    // 原索引放到bucket里
                     if (loTail != null) {
                         loTail.next = null;
                         newTab[j] = loHead;
                     }
+                    // 原索引+oldCap放到bucket里
                     if (hiTail != null) {
                         hiTail.next = null;
                         newTab[j + oldCap] = hiHead;
