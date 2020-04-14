@@ -1,5 +1,34 @@
 # queue结构
-## 1. BlockingQueue
+## 1.Queue接口（单向队列）
+Queue接口，是集合框架Collection的子接口，是一种常见的数据结构，遵循先进先出的原则。
+是**基于链表**来进行实现的**单向队列**。
+
+LinkedList接口，实现了Deque，所以LinkedList，在插入和删除操作，效率会比较高。
+
+- poll（）：将队首的元素删除，并返回该元素。
+- peek（）：返回队首的元素，但不进行删除操作。
+- offer（）：将元素添加到队尾，如果成功，则返回true。
+
+## 2.Deque接口（双端队列）
+Deque接口，是Queue接口的子接口，是指队列两端的元素，既能入队（offer）也能出队。
+
+如果将Deque限制为只能从一端进行入队和出队，就是栈的数据结构的实现。对于栈而言，有入栈（push）和出栈（pop），遵循先进后出的规则。
+
+双端队列：
+
+- add(（e）\offer（e）：将元素增加到队列的末尾，如果成功，返回true。
+- remove（）\poll（）:将元素从队列的末尾删除。
+- element（）\peek（）：返回队首的元素，但不进行删除。
+
+栈：
+- push（e）:入栈
+- pop（e）:出栈
+- peek（）:返回栈首元素，但不进行删除。
+
+## 3. [ArrayDeque](https://www.jianshu.com/p/132733115f95)
+
+
+# BlockingQueue
 > A {@link java.util.Queue} that additionally supports operations
 that wait for the queue to become non-empty when retrieving an
 element, and wait for space to become available in the queue when
@@ -152,7 +181,7 @@ the {@code BlockingQueue} in another thread.
 <a href="{@docRoot}/../technotes/guides/collections/index.html">
 Java Collections Framework</a>.
 
-## 2. SynchronousQueue
+## 1. SynchronousQueue
 > 一个{@linkplain BlockingQueue blocking queue}，其每个插入操作必须等待另一个线程执行相应的删除操作，反之亦然。
   同步队列没有任何内部容量，甚至连一个容量都没有。您不能对同步队列执行{@code peek}操作，因为一个元素只有在您试图删除它时才会出现;你不能(使用任何方法)插入一个元素，除非另一个线程试图移除它;
   您不能进行迭代，因为没有可以迭代的内容。
@@ -162,7 +191,7 @@ Java Collections Framework</a>.
   这个类及其迭代器实现了{@link Collection}和{@link Iterator}接口的所有<em>可选的</em>方法。
   这个类是<a href> Java集合框架</a>的成员。
 
-## 3. ArrayBlockingQueue
+## 2. ArrayBlockingQueue
 > 一个依靠数组支持的有界{@linkplain BlockingQueue blocking queue}。这个队列对元素FIFO(先进先出)排序。 
   队列的<em>头</em>是队列中存在时间最长的元素。 
   队列的<em>尾</em>是队列中出现时间最短的元素。
