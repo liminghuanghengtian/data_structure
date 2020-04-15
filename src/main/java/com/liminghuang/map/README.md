@@ -237,7 +237,11 @@ final Node<K,V>[] resize() {
 3. hash算法(采用取模低效)：`int hash = key.hashCode();
                   int index = (hash & 0x7FFFFFFF) % tab.length;`
 4. 扩容通过rehash，扩容长度为原长两倍加一，最大长度`MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;`
-                  
+
+# LinkedHashMap
+LinkedHashMap的数据结构是HashMap+双向队列的数据结构，支持访问排序和插入排序.
+访问排序的数据结构非常适合实现LRUCache算法。
+
 # ConcurrentHashMap(java8)                  
 1. 采用分段锁来保证同步及高效性能
 2. hash算法调整`static final int spread(int h) {
