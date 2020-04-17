@@ -18,7 +18,7 @@ import java.util.Map;
  * @author Adaministrator
  */
 public class LruCache {
-    private static final int MAX_SIZE = 5;
+    private static final int MAX_SIZE = 4;
     private LruLinkedHashMap<String, String> mInternalCache = new LruLinkedHashMap<String, String>(8, 0.75f);
     
     private static class LruLinkedHashMap<K, V> extends LinkedHashMap<K, V> {
@@ -36,7 +36,7 @@ public class LruCache {
          */
         @Override
         protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
-            boolean ret = size() == MAX_SIZE;
+            boolean ret = size() > MAX_SIZE;
             if (ret) {
                 System.out.println("removeEldestEntry: " + eldest.getKey() + "-" + eldest.getValue());
             }
