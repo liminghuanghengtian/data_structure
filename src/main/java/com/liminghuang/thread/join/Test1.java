@@ -1,9 +1,5 @@
 package com.liminghuang.thread.join;
 
-import java.util.Locale;
-
-import static java.lang.Thread.sleep;
-
 /**
  * ProjectName: data_structure
  * PackageName: com.liminghuang.thread.join
@@ -30,15 +26,13 @@ public class Test1 {
         public void run() {
             // 每个线程都能及时获得锁，因为其他线程wait时就会释放
             synchronized (lock) {
-                if (isAlive()) {
-                    try {
-                        System.out.println(Thread.currentThread() + " run");
-                        // 释放锁
-                        lock.wait();
-                        System.out.println(Thread.currentThread() + " resume execute");
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                try {
+                    System.out.println(Thread.currentThread() + " run");
+                    // 释放锁
+                    lock.wait();
+                    System.out.println(Thread.currentThread() + " resume execute");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         }
