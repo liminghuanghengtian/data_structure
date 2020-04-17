@@ -66,39 +66,47 @@ public class LruCache {
         System.out.println("----end----\n");
     }
     
+    public String get(String key) {
+        return mInternalCache.getOrDefault(key, "");
+    }
+    
+    public void put(String key, String value) {
+        mInternalCache.put(key, value);
+    }
+    
     public Map<String, String> getCache() {
         return mInternalCache;
     }
     
     public static void main(String[] params) {
         LruCache cache = new LruCache();
-        cache.getCache().put("1", "语文");
-        cache.getCache().put("2", "数学");
-        cache.getCache().put("3", "科学");
+        cache.put("1", "语文");
+        cache.put("2", "数学");
+        cache.put("3", "科学");
         cache.print("输出");
         
-        cache.getCache().put("4", "英语");
+        cache.put("4", "英语");
         cache.print("新增4-英语");
         
         // get一下
-        cache.getCache().get("3");
+        cache.get("3");
         cache.print("查找3");
         
-        cache.getCache().put("2", "新课（替换数学）");
+        cache.put("2", "新课（替换数学）");
         cache.print("重置2");
         
-        cache.getCache().put("4", "新课（替换英语）");
+        cache.put("4", "新课（替换英语）");
         cache.print("重置4");
         
         // 再get一下
-        cache.getCache().get("2");
+        cache.get("2");
         cache.print("查找2");
         
         // 再get一下
-        cache.getCache().get("3");
+        cache.get("3");
         cache.print("查找3");
         
-        cache.getCache().put("5", "体育");
+        cache.put("5", "体育");
         cache.print("新增5-体育");
         
         
