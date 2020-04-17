@@ -353,9 +353,12 @@ final Node<K,V> removeNode(int hash, Object key, Object value,
 # LinkedHashMap(java8)
 ## 特性
 1. LinkedHashMap是HashMap+双向链表的数据结构，支持访问排序和插入排序，所以其内部是有序的，不想像HashMap。基于**访问排序**的数据结构非常适合实现`LruCache`算法。
-2. 为了实现双向链表的结构，在HashMap.Node继承基础上增加before和after两个双向指针
+2. 为了实现双向链表的结构，在`HashMap.Node`继承基础上增加`before`和`after`两个双向指针用以形成双向链表
 3. put方法复用父类HashMap的，覆写父类HashMap的`newNode`方法，创建节点并添加节点到双向链表尾部
 4. 双向链表的**尾部（tail）才是最新鲜的节点**，新添加的节点和设置了访问排序后访问的节点都会被调整到链尾
+5. LinkedHashMap专门实现的三个方法：`afterNodeInsertion(boolean evict)`，`afterNodeRemoval(Node<K,V> e)`，`afterNodeAccess
+(Node<K,V> e)`，分别的逻辑是HashMap放入数据时是否移除oldestNode数据，HashMap数据移除之后双向链表也需要解开该节点，LinkedHashMap数据被访问时或被重置`value`时候
+将访问节点移动到双向链表尾部(youngest)
 
 ## 1. 构造器
 ```
@@ -401,7 +404,7 @@ static class Entry<K,V> extends HashMap.Node<K,V> {
     }
 ```
 ## 3. put操作
-LinkedHashMap内部并没有重新定义put方法，只是覆写了`newNode`方法和专门为其设计的`afterNodeInsertion`方法。
+LinkedHashMap内部并没有重新定义put方法，只是覆写了`newNode(int hash, K key, V value, Node<K,V> e)`方法和专门为其设计的`afterNodeInsertion`方法。
 
 ### newNode
 ```
@@ -554,6 +557,8 @@ void afterNodeAccess(Node<K,V> e) { // move node to last
 ```
 
 ## 5. 迭代器
+LinkedHashIterator是三种迭代器的模板，包含主要的方法：`hasNext()`,`nextNode()`，`remove()`以及主要的状态属性：`next`，`current`,`expectModCount`
+
 ```java
     abstract class LinkedHashIterator {
         LinkedHashMap.Entry<K,V> next;// 哨兵next用来遍历节点
@@ -580,6 +585,7 @@ void afterNodeAccess(Node<K,V> e) { // move node to last
             if (e == null)
                 throw new NoSuchElementException();
             
+            // 以下是核心两行代码
             current = e;
             // 遍历双向链表（显然只要双向列表维护一个顺序，则遍历是有一定顺序的）
             next = e.after;
@@ -607,6 +613,7 @@ void afterNodeAccess(Node<K,V> e) { // move node to last
         public final int size()                 { return size; }
         public final void clear()               { LinkedHashMap.this.clear(); /*调用父类的clear，并且双向链表head和tail置空  */}
         public final Iterator<Map.Entry<K,V>> iterator() {
+            // 主要的迭代器逻辑都在LinkedHashIterator
             return new LinkedEntryIterator();
         }
         public final boolean contains(Object o) {
@@ -635,6 +642,7 @@ void afterNodeAccess(Node<K,V> e) { // move node to last
             if (action == null)
                 throw new NullPointerException();
             int mc = modCount;
+            // 可见链表的遍历是非常的方便
             for (LinkedHashMap.Entry<K,V> e = head; e != null; e = e.after)
                 action.accept(e);
             if (modCount != mc)
