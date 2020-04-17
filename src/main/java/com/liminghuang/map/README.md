@@ -2,9 +2,9 @@
 ## 特性
 1. 默认初始长度为16，数组长度必须是2的幂（为了key映射到index时候的hash算法更高效，通过`（n-1）& hash`值的位运算，等效于取模），扩容是之前容量的两倍
 2. hash算法结果是均匀的，即能保证index较为均匀；java8的hash算法通过key.hashcode，将其高16位和低16位做异或（`h ^ h>>>16`），这个综合考虑了速度，作用和质量
-3. java7 hash碰撞通过链表实现，总是**添加到链头**（设计者认为后插入的数据被查找的可能性大）；java8在链表的长度**超过6（大于等于TREEIFY_THRESHOLD - 1），将链表转为红黑树**(查找效率快，时间复杂度O（logN）)，无法解决hash碰撞的问题，但通过红黑树优秀的查找性能来解决问题
-4. 扩容是创建新长度数组，然后将原数组内容重新计算index后放入新数组；java8 仅重新计算index，省略重新hash过程，因为hash算法所得hash值不变，所以新index要么等于原index，要么原index加上原长；resize的过程，均匀的把之前的冲突的节点分散到新的bucket了
-5. 高并发下出现链表的环形结构。当调用Get查找一个不存在的Key，而这个Key的Hash结果恰好在index位置的时候，由于位置index处带有环形链表，所以程序将会进入死循环（链表中不存元素，一直遍历）！
+3. java7 hash碰撞通过链表解决，总是**添加到链头**（设计者认为后插入的数据被查找的可能性大）；java8在链表的长度**超过6（大于等于TREEIFY_THRESHOLD - 1），将链表转为红黑树**(查找效率快，时间复杂度O（logN）)，并没有解决hash碰撞的问题，只是通过红黑树优秀的查找性能来解决问题
+4. 扩容是创建新长度数组，然后将原数组内容**重新计算index**后放入新数组；java8 仅重新计算index，省略重新hash过程，所以新index要么等于原index，要么原index加上原长（这点从index的位运算可以看出）；resize的过程，均匀的把之前的冲突的节点分散到新的bucket了
+5. 高并发下出现链表的环形结构。当调用Get查找一个**不存在的Key**，而这个Key的Hash结果恰好在index位置的时候，由于位置index处带有环形链表，所以程序将会进入死循环（链表中不存元素，一直遍历）！
 
 ## 1. put的实现
 put函数大致的思路为：
@@ -352,7 +352,7 @@ final Node<K,V> removeNode(int hash, Object key, Object value,
 
 # LinkedHashMap(java8)
 ## 特性
-1. LinkedHashMap是HashMap+双向链表的数据结构，支持访问排序和插入排序，所以其内部是有序的，不想像HashMap。基于**访问排序**的数据结构非常适合实现`LRUCache`算法。
+1. LinkedHashMap是HashMap+双向链表的数据结构，支持访问排序和插入排序，所以其内部是有序的，不想像HashMap。基于**访问排序**的数据结构非常适合实现`LruCache`算法。
 2. 为了实现双向链表的结构，在HashMap.Node继承基础上增加before和after两个双向指针
 3. put方法复用父类HashMap的，覆写父类HashMap的`newNode`方法，创建节点并添加节点到双向链表尾部
 4. 双向链表的**尾部（tail）才是最新鲜的节点**，新添加的节点和设置了访问排序后访问的节点都会被调整到链尾
@@ -434,11 +434,10 @@ private void linkNodeLast(LinkedHashMap.Entry<K,V> p) {
 
 ### afterNodeInsertion
 
-afterNodeInsertion方法**用于移除链表中的最旧的节点对象**，也就是**链表头部**的对象。
-但是在JDK1.8版本中，可以看到removeEldestEntry一直返回false，所以该方法并不生效。
-如果存在特定的需求，比如链表中长度固定，并保持最新的N的节点数据，可以通过重写该方法来进行实现。
+afterNodeInsertion方法**用于移除链表中的最旧的节点对象**，也就是**链表头部**的对象。但是在JDK1.8版本中，可以看到removeEldestEntry一直返回false，所以该方法并不生效。
+如果存在特定的需求，比如**链表中长度固定，并保持最新的N个节点数据**，可以通过重写该方法来进行实现。
 
-```
+``` 
 // possibly remove eldest
 void afterNodeInsertion(boolean evict) { 
         LinkedHashMap.Entry<K,V> first;// first哨兵
@@ -450,6 +449,9 @@ void afterNodeInsertion(boolean evict) {
         }
     }
     
+/**
+ * 覆写该方法，返回true时可实现移除双向列表头（Eldest）节点的功能
+ */
 protected boolean removeEldestEntry(Map.Entry<K,V> eldest) {
         return false;
     }
@@ -457,16 +459,16 @@ protected boolean removeEldestEntry(Map.Entry<K,V> eldest) {
 
 **removeNode实现**
 设想以下需要做哪几件事： 
-1. 从HashMap中移除相应查找的节点，这部分属于HashMap类的逻辑
-2. 从双向链表中移除查找到的节点
+1. 从HashMap中移除匹配的节点，这部分属于HashMap类内的逻辑
+2. 然后从双向链表中移除查找到的节点（通过调用LinkedHashMap实现的afterNodeRemoval方法完成）
 
 ### afterNodeRemoval
-
+当节点从HashMap中被移除后，afterNodeRemoval实现的就是将该移除的节点从双向链表中解开，才得以释放
 ```
 /**
- * 这里就是从双向列表中移除节点，主要包括两个步骤：
+ * 这里就是从双向链表中移除节点，主要包括两个步骤：
  * 1. 先释放自身节点指向外部的两个指针
- * 2. 再释放外部前后两个节点对自身的引用指向，头尾两种情况的话，还需要调整头尾指针的指向
+ * 2. 再释放外部前后两个节点对自身的引用，头尾两种情况的话，还需要调整头尾指针的指向
  */
 void afterNodeRemoval(Node<K,V> e) { // unlink
     LinkedHashMap.Entry<K,V> p = (LinkedHashMap.Entry<K,V>)e, 
@@ -544,7 +546,7 @@ void afterNodeAccess(Node<K,V> e) { // move node to last
         if ((e = getNode(hash(key), key)) == null)
             return null;
             
-        // 当前节点被访问了，需要添加到尾部
+        // 一旦开启了访问排序，在节点被访问的时候需要将该节点添加到双向链表的尾部
         if (accessOrder)
             afterNodeAccess(e);
         return e.value;
@@ -553,13 +555,13 @@ void afterNodeAccess(Node<K,V> e) { // move node to last
 
 ## 5. 迭代器
 ```java
-abstract class LinkedHashIterator {
-        LinkedHashMap.Entry<K,V> next;
-        LinkedHashMap.Entry<K,V> current;
+    abstract class LinkedHashIterator {
+        LinkedHashMap.Entry<K,V> next;// 哨兵next用来遍历节点
+        LinkedHashMap.Entry<K,V> current;// 当前节点
         int expectedModCount;
 
         LinkedHashIterator() {
-            next = head;// 头节点作为起始节点
+            next = head;// 注意：头节点作为起始节点
             expectedModCount = modCount;
             current = null;
         }
@@ -568,16 +570,18 @@ abstract class LinkedHashIterator {
             return next != null;
         }
 
-        // 迭代器Iterator#next获取下一个节点是会调用这个方法
+        // 迭代器Iterator#next获取下一个节点时会调用这个方法获取下一个节点
         final LinkedHashMap.Entry<K,V> nextNode() {
             LinkedHashMap.Entry<K,V> e = next;
             if (modCount != expectedModCount)
                 throw new ConcurrentModificationException();
+            
             // 无元素时，头节点是指向null，这个等会儿从初始化看
             if (e == null)
                 throw new NoSuchElementException();
-            // 
+            
             current = e;
+            // 遍历双向链表（显然只要双向列表维护一个顺序，则遍历是有一定顺序的）
             next = e.after;
             return e;
         }
@@ -590,9 +594,60 @@ abstract class LinkedHashIterator {
                 throw new ConcurrentModificationException();
             current = null;
             K key = p.key;
+            // 还是要通过HashMap的移除方法去执行
             removeNode(hash(key), key, null, false, false);
             expectedModCount = modCount;
         }
+    }
+```
+
+### LinkedEntrySet
+```java
+    final class LinkedEntrySet extends AbstractSet<Map.Entry<K,V>> {
+        public final int size()                 { return size; }
+        public final void clear()               { LinkedHashMap.this.clear(); /*调用父类的clear，并且双向链表head和tail置空  */}
+        public final Iterator<Map.Entry<K,V>> iterator() {
+            return new LinkedEntryIterator();
+        }
+        public final boolean contains(Object o) {
+            if (!(o instanceof Map.Entry))
+                return false;
+            Map.Entry<?,?> e = (Map.Entry<?,?>) o;
+            Object key = e.getKey();
+            Node<K,V> candidate = getNode(hash(key), key);
+            return candidate != null && candidate.equals(e);
+        }
+        public final boolean remove(Object o) {
+            if (o instanceof Map.Entry) {
+                Map.Entry<?,?> e = (Map.Entry<?,?>) o;
+                Object key = e.getKey();
+                Object value = e.getValue();
+                return removeNode(hash(key), key, value, true, true) != null;
+            }
+            return false;
+        }
+        public final Spliterator<Map.Entry<K,V>> spliterator() {
+            return Spliterators.spliterator(this, Spliterator.SIZED |
+                                            Spliterator.ORDERED |
+                                            Spliterator.DISTINCT);
+        }
+        public final void forEach(Consumer<? super Map.Entry<K,V>> action) {
+            if (action == null)
+                throw new NullPointerException();
+            int mc = modCount;
+            for (LinkedHashMap.Entry<K,V> e = head; e != null; e = e.after)
+                action.accept(e);
+            if (modCount != mc)
+                throw new ConcurrentModificationException();
+        }
+    }
+```
+
+#### LinkedEntryIterator实现类
+```java
+final class LinkedEntryIterator extends LinkedHashIterator
+        implements Iterator<Map.Entry<K,V>> {
+        public final Map.Entry<K,V> next() { return nextNode(); }
     }
 ```
 

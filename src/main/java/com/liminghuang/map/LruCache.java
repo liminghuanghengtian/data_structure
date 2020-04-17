@@ -1,13 +1,14 @@
 package com.liminghuang.map;
 
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
  * ProjectName: data_structure
  * PackageName: com.liminghuang.map
- * Description: 基于LinkedHashMap实现LruCache算法
+ * Description: 基于LinkedHashMap实现LruCache算法. 主要涉及以下两点修改：
+ * <p>1. accessOrder需要设置为true，开启访问排序功能.</p>
+ * <p>2. 指定缓存容量，并覆写removeEldestEntry方法，在容量满足时返回true，开启移除eldestNode的功能.</p>
  * <p>
  * CreateTime: 2020/4/17 16:25
  * Modifier: Adaministrator
@@ -17,15 +18,22 @@ import java.util.Map;
  * @author Adaministrator
  */
 public class LruCache {
-    private static final int MAX_SIZE = 4;
+    private static final int MAX_SIZE = 5;
     private LruLinkedHashMap<String, String> mInternalCache = new LruLinkedHashMap<String, String>(8, 0.75f);
     
     private static class LruLinkedHashMap<K, V> extends LinkedHashMap<K, V> {
         LruLinkedHashMap(int initialCapacity,
                          float loadFactor) {
+            // 这里是第一点
             super(initialCapacity, loadFactor, true);
         }
         
+        /**
+         * 这里是第二点
+         *
+         * @param eldest
+         * @return
+         */
         @Override
         protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
             boolean ret = size() == MAX_SIZE;
@@ -39,11 +47,15 @@ public class LruCache {
     public void print(String action) {
         System.out.println("----start----");
         System.out.println(action);
-        for (Iterator<Map.Entry<String, String>> iterator = mInternalCache.entrySet().iterator(); iterator.hasNext
-                (); ) {
-            Map.Entry<String, String> entry = iterator.next();
-            System.out.println("entry: " + entry.getKey() + "=" + entry.getValue());
-        }
+        // hasNext一开始next是执行头节点的，调用了next的方法后把这个头节点取出，然后要指向下一个节点
+        // for (Iterator<Map.Entry<String, String>> iterator = mInternalCache.entrySet().iterator(); iterator.hasNext
+        //         (); ) {
+        //     Map.Entry<String, String> entry = iterator.next();
+        //     System.out.println("entry: " + entry.getKey() + "=" + entry.getValue());
+        // }
+        mInternalCache.forEach((key, value) -> {
+            System.out.println("entry: " + key + "=" + value);
+        });
         System.out.println("----end----\n");
     }
     
@@ -74,13 +86,17 @@ public class LruCache {
         
         cache.getCache().put("2", "新课（替换数学）");
         cache.print("重置2");
-    
+        
         cache.getCache().put("4", "新课（替换英语）");
         cache.print("重置4");
         
         // 再get一下
         cache.getCache().get("2");
         cache.print("查找2");
+        
+        // 再get一下
+        cache.getCache().get("3");
+        cache.print("查找3");
         
         cache.getCache().put("5", "体育");
         cache.print("新增5-体育");
