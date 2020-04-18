@@ -4,7 +4,7 @@ java数据结构基础
 # Java中的Collections API主要包含两个独立的树形结构。Collection和Map
 ## Collection接口
 ![image](‪C:\Users\Adaministrator\Desktop\CollectionAPI.png)
-### Queue
+### [Queue](./src/main/java/com/liminghuang/queue/README.md)
 
 除了基本的Collection接口中定义的操作，还提供其他**插入**、**删除**、和**元素检查**等操作。**限定元素个数的称为<font color="red">有界队列</font>**。
 
@@ -181,11 +181,9 @@ public interface List<E> extends Collection<E>{
 依其名ArrayList，一个动态数组。
 
 #### Vector
-采用**可变体积的数组**实现List接口，默认增长为两倍。该类像数组一样，可以通过索引序号对所包含的元素进行访问，同步的。
+采用**可变体积的数组**实现List接口，默认增长为两倍。该类像数组一样，可以通过索引序号对所包含的元素进行访问，同步的(线程安全)。
 #### LinkedList
 采用**链表结构**实现List接口。除了List中的方法，该类还提供了在List的开头和结尾进行get，remove和insert等操作。这些操作使得LinkedList可以用来实现**堆栈、队列或双端队列**，非同步。
-
-
 
 ### Stack
 
