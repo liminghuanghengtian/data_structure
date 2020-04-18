@@ -3,8 +3,9 @@ java数据结构基础
 
 # Java中的Collections API主要包含两个独立的树形结构。Collection和Map
 ## Collection接口
-![image](‪C:\Users\Adaministrator\Desktop\CollectionAPI.png)
-### [Queue](./src/main/java/com/liminghuang/queue/README.md)
+![image](https://upload-images.jianshu.io/upload_images/2671018-d29cd465fee0e87e.jpg?imageMogr2/auto-orient/strip|imageView2/2/w/490/format/webp‪)
+
+### 1. [Queue](./src/main/java/com/liminghuang/queue/README.md)
 
 除了基本的Collection接口中定义的操作，还提供其他**插入**、**删除**、和**元素检查**等操作。**限定元素个数的称为<font color="red">有界队列</font>**。
 
@@ -35,7 +36,7 @@ public interface Queue<E> extends Collection<E>{
 | 元素检查 | 返回队首元素，但不删除该元素 | 队列空 | element() | peek()，返回null |
 
 
-### Set
+### 2. Set
 Set继承了**Collection**接口，方法全部从Collection继承，自身没有声明其他方法。
 
 ```
@@ -84,16 +85,16 @@ public interface Set<E> extends Collection<E>{
 }
 ```
 JDK提供实现Set接口的3个实用类：***HashSet***、***TreeSet***、***LinkedHashSet***;
-#### 1. HashSet
+#### 2.1 HashSet
 采用Hash表实现了Set接口（源码使用的是HashMap），一个HashSet对象中的元素存储在一个Hash表中，元素没有固定顺序；Hash表结构支持大数据量的访问，所以比线性列表快
 
-#### 2. TreeSet
+#### 2.2 TreeSet
 实现了SortedSet接口（源码中未发现，待研究），采用一种有序树的结构存储集合中的元素，TreeSet对象中的元素按照升序排序
 
-#### 3. LinkedHashSet
+#### 2.3 LinkedHashSet
 实现了Set接口，采用Hash表和链表相结合的结构存储集合中的元素，元素具有固定的顺序，集中了HashSet与TreeSet的优点，即能保证顺序又能够具有较高的存取效率（待研究）
 
-### List
+### 3. List
 List是一种有序集合，继承自Collection接口。除了Collection中的方法，List接口还增加如下操作：
 - 按位置存取元素，按照元素在list中的序号对其进行操作
 - 查找，在list中搜寻指定的对象并返回该对象的序号
@@ -125,8 +126,8 @@ public interface List<E> extends Collection<E>{
 ```
 
 
-### ArrayList & Vector & LinkedList
-####  ArrayList
+### 3.1 ArrayList & Vector & LinkedList
+####  3.1.1 ArrayList
 采用**可变大小的数组**实现List接口，默认增长为1.5倍。ArrayList会随着元素的增加其容积自动扩大，非同步。除此之外，几乎与Vectorc操作是同等的。
 
 ##### 特性
@@ -180,12 +181,12 @@ public interface List<E> extends Collection<E>{
 
 依其名ArrayList，一个动态数组。
 
-#### Vector
+#### 3.1.2 Vector
 采用**可变体积的数组**实现List接口，默认增长为两倍。该类像数组一样，可以通过索引序号对所包含的元素进行访问，同步的(线程安全)。
-#### LinkedList
+#### 3.1.3 LinkedList
 采用**链表结构**实现List接口。除了List中的方法，该类还提供了在List的开头和结尾进行get，remove和insert等操作。这些操作使得LinkedList可以用来实现**堆栈、队列或双端队列**，非同步。
 
-### Stack
+### 5. Stack
 
 ```
 
@@ -323,3 +324,4 @@ public class Stack<E> extends Vector<E> {
 | 栈内查询 | 查询元素在栈内最近出现的位置 | synchronized search(o) |
 
 仔细观察源码，不难发现，类的头部声明中推荐开发者自主实现Deque接口来替代Stack。
+### 6. [Map](./src/main/java/com/liminghuang/map/README.md)
