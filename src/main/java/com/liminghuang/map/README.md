@@ -15,7 +15,7 @@ put函数大致的思路为：
 5. 如果节点已经存在就替换old value(保证key的唯一性)
 6. 如果bucket满了(超过load factor*current capacity)，就要resize。
 结合代码分析：
-```
+```java
 public V put(K key, V value) {
     // 对key的hashcode（）做定义的hash方法
     return putVal(hash(key), key, value, false, true);
@@ -127,7 +127,7 @@ final void treeifyBin(Node<K,V>[] tab, int hash) {
 ```
 
 ## 2. 如何扩容？
-```$java
+```java
 /**
  * 扩容
  */
@@ -221,7 +221,7 @@ final Node<K,V>[] resize() {
 3. index索引处是否存在节点，不存在则返回null，存在则比对hash和key是否相等，相等则返回该节点value，否则进入4；
 4. 判断桶内是否还有更多节点，无其他更多节点则返回null, 否则判断桶的首节点类型，为红黑树，则在红黑树内查找，否则在链表内遍历查找（条件依旧是hash和key都匹配）
 
-```
+```java
     final Node<K,V> getNode(int hash, Object key) {
         Node<K,V>[] tab; 
         Node<K,V> first, e; 
@@ -252,7 +252,7 @@ final Node<K,V>[] resize() {
 ```
 
 ## 4. 移除节点removeNode
-```
+```java
 final Node<K,V> removeNode(int hash, Object key, Object value,
                                boolean matchValue, boolean movable) {
     Node<K,V>[] tab; // hash桶数组
@@ -361,7 +361,7 @@ final Node<K,V> removeNode(int hash, Object key, Object value,
 将访问节点移动到双向链表尾部(youngest)
 
 ## 1. 构造器
-```
+```java
 public LinkedHashMap(int initialCapacity, float loadFactor) {
         super(initialCapacity, loadFactor);
         accessOrder = false;
@@ -407,7 +407,7 @@ static class Entry<K,V> extends HashMap.Node<K,V> {
 LinkedHashMap内部并没有重新定义put方法，只是覆写了`newNode(int hash, K key, V value, Node<K,V> e)`方法和专门为其设计的`afterNodeInsertion`方法。
 
 ### newNode
-```
+```java
 Node<K,V> newNode(int hash, K key, V value, Node<K,V> e) {
         // 创建节点
         LinkedHashMap.Entry<K,V> p =
@@ -440,7 +440,7 @@ private void linkNodeLast(LinkedHashMap.Entry<K,V> p) {
 afterNodeInsertion方法**用于移除链表中的最旧的节点对象**，也就是**链表头部**的对象。但是在JDK1.8版本中，可以看到removeEldestEntry一直返回false，所以该方法并不生效。
 如果存在特定的需求，比如**链表中长度固定，并保持最新的N个节点数据**，可以通过重写该方法来进行实现。
 
-``` 
+``` java
 // possibly remove eldest
 void afterNodeInsertion(boolean evict) { 
         LinkedHashMap.Entry<K,V> first;// first哨兵
@@ -467,7 +467,7 @@ protected boolean removeEldestEntry(Map.Entry<K,V> eldest) {
 
 ### afterNodeRemoval
 当节点从HashMap中被移除后，afterNodeRemoval实现的就是将该移除的节点从双向链表中解开，才得以释放
-```
+```java
 /**
  * 这里就是从双向链表中移除节点，主要包括两个步骤：
  * 1. 先释放自身节点指向外部的两个指针
@@ -495,7 +495,7 @@ void afterNodeRemoval(Node<K,V> e) { // unlink
 
 ### afterNodeAccess
 afterNodeAccess方法实现的逻辑，是把作为入参的节点放置在链表的尾部。
-```
+```java
 /**
  * 若是依据访问排序，则将当前访问的节点添加到双向链表的尾部
  */
@@ -543,7 +543,7 @@ void afterNodeAccess(Node<K,V> e) { // move node to last
 ```
 
 ## 4. get操作
-```
+```java
     public V get(Object key) {
         Node<K,V> e;
         if ((e = getNode(hash(key), key)) == null)

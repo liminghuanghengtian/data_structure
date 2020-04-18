@@ -1,15 +1,15 @@
-# data_structure
-java数据结构基础
+# data_structure(JDK 1.8)
+java数据结构
 
-# Java中的Collections API主要包含两个独立的树形结构。Collection和Map
+# Java中的Collections API主要包含两个独立的树形结构——`Collection`和`Map`
 ## Collection接口
 ![image](https://upload-images.jianshu.io/upload_images/2671018-d29cd465fee0e87e.jpg?imageMogr2/auto-orient/strip|imageView2/2/w/490/format/webp‪)
 
 ### 1. [Queue](./src/main/java/com/liminghuang/queue/README.md)
 
-除了基本的Collection接口中定义的操作，还提供其他**插入**、**删除**、和**元素检查**等操作。**限定元素个数的称为<font color="red">有界队列</font>**。
+除了基本的`Collection`接口中定义的操作，还提供其他**插入**、**删除**、和**元素检查**等操作。限定元素个数的称为<font color="red">**有界队列**</font>。
 
-```
+```java
 public interface Queue<E> extends Collection<E>{
     // 元素检查
     E element();
@@ -37,9 +37,9 @@ public interface Queue<E> extends Collection<E>{
 
 
 ### 2. Set
-Set继承了**Collection**接口，方法全部从Collection继承，自身没有声明其他方法。
+Set继承了`Collection`接口，方法全部从`Collection`**继承**，自身没有声明其他方法。
 
-```
+```java
 public interface Set<E> extends Collection<E>{
     // 基本操作
     // 返回集合中元素的数量，如果超过int型最大值Integer.MAX_VALUE，则仅返回最大值
@@ -85,14 +85,14 @@ public interface Set<E> extends Collection<E>{
 }
 ```
 JDK提供实现Set接口的3个实用类：***HashSet***、***TreeSet***、***LinkedHashSet***;
-#### 2.1 HashSet
-采用Hash表实现了Set接口（源码使用的是HashMap），一个HashSet对象中的元素存储在一个Hash表中，元素没有固定顺序；Hash表结构支持大数据量的访问，所以比线性列表快
+#### 2.1 [HashSet](./src/main/java/com/liminghuang/set/README.md)
+采用Hash表实现了`Set`接口（源码使用的是`HashMap`结构存储），一个`HashSet`对象中的元素存储在一个Hash表中，元素没有固定顺序；Hash表结构支持大数据量的访问，所以比线性列表快
 
 #### 2.2 TreeSet
-实现了SortedSet接口（源码中未发现，待研究），采用一种有序树的结构存储集合中的元素，TreeSet对象中的元素按照升序排序
+实现了`SortedSet`接口（源码中未发现，待研究），采用一种有序树的结构存储集合中的元素，`TreeSet`对象中的元素按照升序排序
 
-#### 2.3 LinkedHashSet
-实现了Set接口，采用Hash表和链表相结合的结构存储集合中的元素，元素具有固定的顺序，集中了HashSet与TreeSet的优点，即能保证顺序又能够具有较高的存取效率（待研究）
+#### 2.3 [LinkedHashSet](./src/main/java/com/liminghuang/set/README.md)
+实现了`Set`接口,采用Hash表和链表相结合的结构(即`LinkedHashMap`)存储集合中的元素，元素具有固定的顺序，集中了`HashSet`与`TreeSet`的优点，即能保证顺序又能够具有较高的存取效率（待研究）
 
 ### 3. List
 List是一种有序集合，继承自Collection接口。除了Collection中的方法，List接口还增加如下操作：
@@ -101,8 +101,7 @@ List是一种有序集合，继承自Collection接口。除了Collection中的�
 - 遍历，使用ListIterator实现List的遍历
 - 截取子List，建立List视图
 
-
-```
+```java
 public interface List<E> extends Collection<E>{
     // 按位置存取元素
     E get(int index);
@@ -124,72 +123,18 @@ public interface List<E> extends Collection<E>{
     List<E> subList(int from, int to);
 }
 ```
-
-
-### 3.1 ArrayList & Vector & LinkedList
-####  3.1.1 ArrayList
+#### 3.1 [ArrayList](./src/main/java/com/liminghuang/list/README.md)
 采用**可变大小的数组**实现List接口，默认增长为1.5倍。ArrayList会随着元素的增加其容积自动扩大，非同步。除此之外，几乎与Vectorc操作是同等的。
 
-##### 特性
+#### 3.2 Vector
+采用**可变体积的数组**实现List接口，默认增长为**两倍**。该类像数组一样，可以通过索引序号对所包含的元素进行访问，同步的(线程安全)。
 
-1. 主要底层实现是<font color="red">**对象数组**</font>；
-2. 和LinkedList相比，它的**查找和访问**元素的速度较快，但**新增，删除**的速度较慢（非绝对）。所以主要使用场景是查询，扬长避短；
-3. 可在**构造时初始化底层数组大小**，或者通过无参构造初始化成**默认空数组**，添加数据时才分配默认长度为10的初始容量；为什么是10？10是基于调研的一个常用且最有效的；
-4. 可通过**数组扩容**的方式去避免数组有限长度的问题，达到无限制长度的效果；
-5. ArrayList(int initialCapacity)会初始化数组大小，但是<font color="red">**List大小是返回size的，所以构造时List大小是无变化的**</font>，add操作之后才会增加List的大小；所以不能在构造ArrayList之后直接进行set操作，因为set内部下标是和size比较的；
-6. 线程不安全，线程安全可使用**Vector(同步在方法上)**，或者**用Collections.synchronizedList包装**一个线程安全版本的数组容器使用（方法内同步语句块）；
-7. **不适合做队列**。队列特性先进先出，能通过尾部新增，头部移除实现，但是涉及到数据移动，速度慢；
-8. 数组适合做队列。前提是<font color="red">**定长数组**，通过两个偏移量来标记读和写的位置来满足，如果超过长度就折回到数组开头；例如：*数组阻塞队列ArrayBlockingQueue*</font>
-9. **遍历性能优于LinkedList**。因为底层数组实现，分配的内存连续。CPU的内部缓存结构会缓存连续的内存片段，可以大幅降低读取内存的性能开销。
+#### 3.3 [LinkedList](./src/main/java/com/liminghuang/list/README.md)
+采用**链表结构**实现List接口。除了List中的方法，该类还提供了在List的开头和结尾进行get，remove和insert等操作。这些操作使得LinkedList可以用来实现**堆栈、队列或双端队列**，非同步(线程不安全)。
 
-##### 扩容操作
+### 4. Stack
 
-1. 何时需要扩容？数组空间已填满，无法插入元素
-2. 扩容算法？N+N/2 = 1.5N（N为当前数组长度，所以未指定数组长度的情况，正常的扩容长度依次会是10，15，22，33...）
-3. 如何扩容？把原数组的数据，原封不动的复制到新数组中，这个时候再把指向原数组的地址换到新数组
-
-##### 增删操作
-
-**1. 新增操作**
-
-新增操作分两类：指定index新增和尾部新增
-
-*第一种：尾部新增*
-
-1. 确认数组长度（是否扩容，是则完成扩容）
-2. 加入尾部
-
-*第二种：指定index新增*
-
-1. 确认插入index合法
-2. 确认数组长度（是否扩容，是则完成扩容）
-3. 指定index开始的数据后移（通过native实现的数组拷贝来完成。并没有真正的拷贝方法，实则通过将index及之后元素一个个后移，清理出index位置的空间）
-4. 在index处插入数据
-
-综合上面两种新增方式，不难发现新增速度慢的特性描述并非绝对，是在一定的场景下得出。显然在指定index新增比较符合特性描述，因为即便拷贝操作是在native完成，但是数据量大了之后，根据上述介绍拷贝的原理，这并非是一个高性能的操作。而且扩容操作也涉及到拷贝的过程。
-
-**2. 删除操作**
-
-介绍一种：指定index移除
-
-1. 确认删除index合法
-2. 指定index之后的数据前移(还是同上通过数组拷贝完成)，实则覆盖非删除
-
-同新增方式大同小异，数组容量大，效率堪忧。
-
-##### 总结
-
-依其名ArrayList，一个动态数组。
-
-#### 3.1.2 Vector
-采用**可变体积的数组**实现List接口，默认增长为两倍。该类像数组一样，可以通过索引序号对所包含的元素进行访问，同步的(线程安全)。
-#### 3.1.3 LinkedList
-采用**链表结构**实现List接口。除了List中的方法，该类还提供了在List的开头和结尾进行get，remove和insert等操作。这些操作使得LinkedList可以用来实现**堆栈、队列或双端队列**，非同步。
-
-### 5. Stack
-
-```
-
+```java
 package java.util;
 
 /**
@@ -324,4 +269,4 @@ public class Stack<E> extends Vector<E> {
 | 栈内查询 | 查询元素在栈内最近出现的位置 | synchronized search(o) |
 
 仔细观察源码，不难发现，类的头部声明中推荐开发者自主实现Deque接口来替代Stack。
-### 6. [Map](./src/main/java/com/liminghuang/map/README.md)
+### 5. [Map](./src/main/java/com/liminghuang/map/README.md)
