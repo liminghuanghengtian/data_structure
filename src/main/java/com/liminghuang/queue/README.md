@@ -1,6 +1,6 @@
 # queue结构
 ## 1.Queue接口（单向队列）
-Queue接口，是集合框架Collection的子接口，是一种常见的数据结构，遵循先进先出的原则。
+Queue接口，是集合框架Collection的子接口，是一种常见的数据结构，遵循**先进先出**的原则。
 是**基于链表**来进行实现的**单向队列**。
 
 LinkedList接口，实现了Deque，所以LinkedList，在插入和删除操作，效率会比较高。
@@ -10,23 +10,161 @@ LinkedList接口，实现了Deque，所以LinkedList，在插入和删除操作�
 - offer（）：将元素添加到队尾，如果成功，则返回true。
 
 ## 2.Deque接口（双端队列）
-Deque接口，是Queue接口的子接口，是指队列两端的元素，既能入队（offer）也能出队。
+Deque接口，是Queue接口的子接口，是指队列两端的元素，既能入队（offer）也能出队(poll)。
 
-如果将Deque限制为只能从一端进行入队和出队，就是栈的数据结构的实现。对于栈而言，有入栈（push）和出栈（pop），遵循先进后出的规则。
+如果将Deque限制为只能**从一端进行入队和出队**，就是**栈的数据结构**的实现。对于栈而言，有入栈（push）和出栈（pop），遵循先进后出的规则。
 
 双端队列：
-
 - add(（e）\offer（e）：将元素增加到队列的末尾，如果成功，返回true。
 - remove（）\poll（）:将元素从队列的末尾删除。
 - element（）\peek（）：返回队首的元素，但不进行删除。
 
 栈：
-- push（e）:入栈
-- pop（e）:出栈
-- peek（）:返回栈首元素，但不进行删除。
+- push(e):入栈
+- pop(e):出栈
+- peek():返回栈首元素，但不进行删除。
 
 ## 3. [ArrayDeque](https://www.jianshu.com/p/132733115f95)
+> Resizable-array implementation of the {@link Deque} interface.  Array deques have no capacity restrictions; they grow as necessary to support usage.  They are not thread-safe; in the absence of external synchronization, they do not support concurrent access by multiple threads. Null elements are prohibited.  This class is likely to be faster than {@link Stack} when used as a stack, and faster than {@link LinkedList} when used as a queue.
 
+实现{@link Deque}接口的可调整大小的数组。ArrayDeque**没有容量限制**;它们根据需要增长以支持使用。它们**不是线程安全的**;在缺乏外部同步的情况下，它们不支持多线程的并发访问。**禁止空元素**。这个类用作堆栈时可能比{@link Stack}快，用作队列时可能比{@link LinkedList}快。
+
+> Most {@code ArrayDeque} operations run in amortized constant time. Exceptions include {@link #remove(Object) remove}, {@link #removeFirstOccurrence removeFirstOccurrence}, {@link #removeLastOccurrence removeLastOccurrence}, {@link #contains contains}, {@link #iterator
+  iterator.remove()}, and the bulk operations, all of which run in linear time.
+  
+大多数{@code ArrayDeque}操作在平摊常数时间内运行。异常包括{@link #remove(Object) remove}， {@link #removeFirstOccurrence removeFirstOccurrence}， {@link #removeLastOccurrence removeLastOccurrence}， {@link #contains contains}， {@link #iterator iterator.remove() 
+和批量操作，所有这些操作都在线性时间内运行。
+
+> The iterators returned by this class's {@code iterator} method are <i>fail-fast</i>: If the deque is modified at any time after the iterator is created, in any way except through the iterator's own {@code remove} method, the iterator will generally throw a {@link ConcurrentModificationException}.  Thus, in the face of concurrent modification, the iterator fails quickly and cleanly, rather than risking arbitrary, non-deterministic behavior at an undetermined time in the future.
+
+这个类的{@code iterator}方法返回的迭代器是<i> failure -fast(快速失败))</i>:如果deque在迭代器创建后的任何时候被修改，除了通过迭代器自己的{@code remove}方法，迭代器通常会抛出一个{@link ConcurrentModificationException}。因此，在面对并发修改时，迭代器会快速而干净地失败，而不是在将来某个不确定的时间冒任意的、不确定的行为的风险。
+
+> Note that the fail-fast behavior of an iterator cannot be guaranteed as it is, generally speaking, impossible to make any hard guarantees in the presence of unsynchronized concurrent modification.  Fail-fast iterators throw {@code ConcurrentModificationException} on a best-effort basis. Therefore, it would be wrong to write a program that depended on this exception for its correctness: <i>the fail-fast behavior of iterators should be used only to detect bugs.</i>
+
+注意，不能保证迭代器的快速故障行为，因为通常来说，在存在非同步并发修改的情况下，不可能做出任何严格的保证。故障快速迭代器尽最大努力抛出{@code ConcurrentModificationException}。因此，编写一个依赖于这个异常来保证其正确性的程序是错误的:<i>迭代器的快速失效行为应该只用于检测bug。</i>
+
+> This class and its iterator implement all of the <em>optional</em> methods of the {@link Collection} and {@link Iterator} interfaces.
+
+这个类及其迭代器实现了{@link Collection}和{@link Iterator}接口的所有<em>可选的</em>方法。
+
+### 特性
+1. 默认初始容量16，长度需要是2的幂
+2. 逻辑上是循环数组，没有固定头和尾，拥有`head`和`tail`两个指针，可往头尾插入数据，长度计算`(tail - head) & (elements.length - 1)`
+3. 
+
+### 添加
+初始创建ArrayDeque对象，创建长度为16的数组，head和tail此时为零，指向第一个索引位置,添加数据后`head`或`tail`才开始变化。`addFirst`第一个添加的元素位置在`index=15`处，`addLast`第一个添加的元素在`index=0`处。
+
+#### 头部添加
+1. 计算新head索引`(head - 1) & (elements.length - 1)`，采用**位与运算**，保证head新索引位置在数组的有效长度范围内
+2. 数组head索引对应槽位填入数据
+
+```java
+    public void addFirst(E e) {
+        if (e == null)
+            throw new NullPointerException();
+        // 计算head新索引
+        elements[head = (head - 1) & (elements.length - 1)] = e;
+        if (head == tail)// head与tail缠绕时需要扩容，头尾相碰表示容量已用完
+            doubleCapacity();// 扩容为原长两倍
+    }
+```
+步骤1原理介绍：
+- 当head-1为-1时，实际上是11111111&00001111，结果是00001111，也就是物理数组的尾部15；
+- 当head-1为较小的值如3时，实际上是00000011&00001111，结果是00000011，还是3。
+- 当head增长如head+1超过物理数组长度如16时，实际上是00010000&00001111，结果是00000000，也就是0，这样就回到了物理数组的头部。
+
+#### 尾部添加
+大致同头部添加一致，主要不同点在于：
+1. tail位置是在上一次添加元素后，tail新位置已计算好，始终指向一个空槽
+2. 每次直接在空槽放入数据即可
+
+```java
+    public void addLast(E e) {
+        if (e == null)
+            throw new NullPointerException();
+        elements[tail] = e;
+        if ( (tail = (tail + 1) & (elements.length - 1)) == head)
+            doubleCapacity();
+    }
+```
+### 移除
+#### 头部移除
+1. 查找head索引槽位的数据
+2. 数据为空，直接返回null
+3. 数据不为空，先释放索引处的槽位，重新调整head指向后一个槽位`(h + 1) & (elements.length - 1)`，成为新head
+```java
+    public E removeFirst() {
+        E x = pollFirst();
+        if (x == null)
+            throw new NoSuchElementException();
+        return x;
+    }
+    
+    public E pollFirst() {
+        int h = head;
+        @SuppressWarnings("unchecked")
+        E result = (E) elements[h];
+        // Element is null if deque empty
+        if (result == null)
+            return null;
+        // 去除数据，槽位释放
+        elements[h] = null;     // Must null out slot
+        // head指针位置调整
+        head = (h + 1) & (elements.length - 1);
+        return result;
+    }    
+```
+
+#### 尾部移除
+1. tail始终指向的是尾巴后面的一个空槽位，需要先计算尾巴数据的索引位置`(tail - 1) & (elements.length - 1)`，这点和从头部取不同，head始终是头部数据的索引位置
+2. 根据计算好的索引位置获取尾部数据
+3. 数据为空，则直接返回`null`
+4. 数据不为空，则释放槽位，调整tail指向该释放的槽位，返回移除的数据内容
+```java
+    public E removeLast() {
+        E x = pollLast();
+        if (x == null)
+            throw new NoSuchElementException();
+        return x;
+    }
+    
+    public E pollLast() {
+        int t = (tail - 1) & (elements.length - 1);
+        @SuppressWarnings("unchecked")
+        E result = (E) elements[t];
+        if (result == null)
+            return null;
+        elements[t] = null;
+        tail = t;
+        return result;
+    }
+```
+
+### 如何扩容？
+扩容为原先的两倍长度，数组数据拷贝到新数组中。
+1. head索引到数组物理末端的元素，这段内容拷贝到新数组中，从索引0的位置开始填充
+2. 原数组索引0-head段拷贝到新数组，从索引r开始填充
+
+```java
+    private void doubleCapacity() {
+        assert head == tail;
+        int p = head;
+        int n = elements.length;
+        int r = n - p; // number of elements to the right of p
+        int newCapacity = n << 1;
+        if (newCapacity < 0)
+            throw new IllegalStateException("Sorry, deque too big");
+        Object[] a = new Object[newCapacity];
+        // @1
+        System.arraycopy(elements, p, a, 0, r);
+        // @2
+        System.arraycopy(elements, 0, a, r, p);
+        elements = a;
+        head = 0;
+        tail = n;// tail始终指向尾巴元素后的空槽位
+    }
+```
 
 # BlockingQueue
 > A {@link java.util.Queue} that additionally supports operations
