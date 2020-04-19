@@ -1,5 +1,6 @@
 package com.liminghuang.stack;
 
+import java.util.Arrays;
 import java.util.Stack;
 
 /**
@@ -39,9 +40,11 @@ public class MinStack {
         } else {
             Integer ele = minValueStack.peek();//
             if (e < ele) {
+                minValueStack.pop();
                 minValueStack.push(e);
             }
         }
+        System.out.println(Arrays.toString(minValueStack.toArray()));
     }
     
     public Integer getMin() {
@@ -54,7 +57,7 @@ public class MinStack {
     
     public static void main(String[] args) {
         MinStack minStack = new MinStack();
-        Integer[] array = {1, 2, 3, 4, 5, 0};
+        Integer[] array = {6, 1, 2, 3, 4, 5, 0};
         for (Integer i : array) {
             minStack.push(i);
         }
