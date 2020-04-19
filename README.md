@@ -133,7 +133,7 @@ public interface List<E> extends Collection<E>{
 采用**链表结构**实现List接口。除了List中的方法，该类还提供了在List的开头和结尾进行get，remove和insert等操作。这些操作使得LinkedList可以用来实现**堆栈、队列或双端队列**，非同步(线程不安全)。
 
 ### 4. Stack
-
+继承Vector，所以也是线程安全，同步的
 ```java
 package java.util;
 
@@ -260,13 +260,14 @@ public class Stack<E> extends Vector<E> {
 由此可见，JDK1.0 中Stack的实现基于Vector，而Vector是List接口的一个直接实现类（**线程安全**），所以Stack的栈操作是基于Vector的基本操作。
 栈的几种常用操作方式：
 
-| 栈操作 | 功能说明 | 操作方法 |
-| -------- | :---: | :---: |
-| 入栈 | 向队列中加入元素 | push(e) |
-| 出栈 | 从队首移走一个元素 | synchronized pop |
-| 元素检查 | 返回队首元素，但不删除该元素 | synchronized peek-窥视 |
-| 栈空间检查 | 栈结构是否为空 | empty |
-| 栈内查询 | 查询元素在栈内最近出现的位置 | synchronized search(o) |
+| 栈操作 | 功能说明 | 操作方法 | 抛出异常 |
+| -------- | :---: | :---: | :---: |
+| 入栈 | 向队列中加入元素 | push(e) | No |
+| 出栈 | 从队首移走一个元素 | synchronized pop | 栈空时抛异常 |
+| 元素检查 | 返回队首元素，但不删除该元素 | synchronized peek-窥视 |  栈空时抛异常 |
+| 栈空间检查 | 栈结构是否为空 | empty | No |
+| 栈内查询 | 查询元素在栈内最近出现的位置 | synchronized search(o) | No |
 
 仔细观察源码，不难发现，类的头部声明中推荐开发者自主实现Deque接口来替代Stack。
 ### 5. [Map](./src/main/java/com/liminghuang/map/README.md)
+### 6. [SparseArray](https://www.jianshu.com/p/186d1e466aae)
