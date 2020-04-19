@@ -5,7 +5,8 @@ import java.util.Stack;
 /**
  * ProjectName: example
  * PackageName: com.liminghuang
- * Description: 基于两个栈结构实现队列基本功能
+ * Description: 基于两个栈结构实现队列基本功能。
+ * 原理分析：队列是先进先出，即从队尾入列，队头出列。采用两个栈的结构，互相倒腾，保证队头和队尾都能被访问到.
  * <p>
  * CreateTime: 2017/8/15 22:33
  * Modifier: Adaministrator
@@ -25,26 +26,32 @@ public class StackQueue {
     }
     
     public void enqueue(Integer e) {
+        // 1. 先把数据倒回来，暴露出队尾
+        while (!reversalStack.isEmpty()) {
+            originStack.push(reversalStack.pop());
+        }
+        // System.out.println("originStack: " + originStack.toString());
         originStack.push(e);
     }
     
     public Integer dequeue() {
-        // 当倒叙栈空时，将原栈数据倒入到倒叙栈
-        if (reversalStack.isEmpty()) {
-            while (!originStack.empty()) {
-                reversalStack.push(originStack.pop());
-            }
+        // 1. 先把数据倒出来，暴露出队头
+        while (!originStack.empty()) {
+            reversalStack.push(originStack.pop());
         }
-        System.out.println("reversalStack: " + reversalStack.toString());
+        // System.out.println("reversalStack: " + reversalStack.toString());
         return reversalStack.pop();
     }
     
     public String toString() {
-        return reversalStack.toString();
+        while (!reversalStack.isEmpty()) {
+            originStack.push(reversalStack.pop());
+        }
+        return originStack.toString();
     }
     
     public boolean isEmpty() {
-        return reversalStack.isEmpty();
+        return reversalStack.isEmpty() && originStack.isEmpty();
     }
     
     public static void main(String[] args) {
@@ -53,10 +60,16 @@ public class StackQueue {
         for (Integer i : array) {
             stackQueue.enqueue(i);
         }
+        System.out.println("queue: " + stackQueue.toString());
         
         System.out.println("dequeue e: " + stackQueue.dequeue());
-        while (!stackQueue.isEmpty()) {
-            System.out.println("dequeue e: " + stackQueue.dequeue());
-        }
+        System.out.println("queue: " + stackQueue.toString());
+        
+        stackQueue.enqueue(6);
+        stackQueue.enqueue(7);
+        System.out.println("queue: " + stackQueue.toString());
+        
+        System.out.println("dequeue e: " + stackQueue.dequeue());
+        System.out.println("queue: " + stackQueue.toString());
     }
 }
