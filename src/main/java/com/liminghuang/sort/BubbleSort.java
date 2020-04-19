@@ -8,12 +8,9 @@ import java.util.Arrays;
  * Description: 冒泡排序-冒泡增序
  * 原理：
  * <p>从数组的第一个位置开始两两比较array[index]和array[index+1]，
- * 如果array[index]大于array[index+1]则交换array[index]和array[index+1]的位置，止到数组结束；
- * </p>
- * <p>
- * 从数组的第一个位置开始，重复上面的动作，止到数组长度减一个位置结束；
- * <p>
- * 从数组的第一个位置开始，重复上面的动作，止到数组长度减二个位置结束；
+ * 如果array[index]大于array[index+1]则交换array[index]和array[index+1]的位置，止到数组结束；</p>
+ * <p>从数组的第一个位置开始，重复上面的动作，止到数组长度减一个位置结束；</p>
+ * <p>从数组的第一个位置开始，重复上面的动作，止到数组长度减二个位置结束；</p>
  * <p>
  * CreateTime: 2017/8/8 20:07
  * Modifier: Adaministrator
