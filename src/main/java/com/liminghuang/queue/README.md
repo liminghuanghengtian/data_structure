@@ -18,7 +18,7 @@ Deque接口，是Queue接口的子接口，是指队列两端的元素，既能�
 - pop(e):出栈
 - peek():返回栈首元素，但不进行删除。
 
-## 3. [ArrayDeque](https://www.jianshu.com/p/132733115f95)
+## 3. ArrayDeque
 > Resizable-array implementation of the {@link Deque} interface.  Array deques have no capacity restrictions; they grow as necessary to support usage.  They are not thread-safe; in the absence of external synchronization, they do not support concurrent access by multiple threads. Null elements are prohibited.  This class is likely to be faster than {@link Stack} when used as a stack, and faster than {@link LinkedList} when used as a queue.
 
 实现{@link Deque}接口的可调整大小的数组。ArrayDeque**没有容量限制**;它们根据需要增长以支持使用。它们**不是线程安全的**;在缺乏外部同步的情况下，它们不支持多线程的并发访问。**禁止空元素**。这个类用作堆栈时可能比{@link Stack}快，用作队列时可能比{@link LinkedList}快。
@@ -160,6 +160,8 @@ Deque接口，是Queue接口的子接口，是指队列两端的元素，既能�
     }
 ```
 
+### [ArrayDeque第三方解析]((https://www.jianshu.com/p/132733115f95)) 
+
 # BlockingQueue
 > A {@link java.util.Queue} that additionally supports operations
 that wait for the queue to become non-empty when retrieving an
@@ -265,7 +267,7 @@ producers and multiple consumers.
 
 基于典型的生产者-消费者场景的使用示例。注意，{@code BlockingQueue}可以安全地用于多个生产者和多个消费者。
 
- <pre> {@code
+ <pre> 
 class Producer implements Runnable {
   private final BlockingQueue queue;
   Producer(BlockingQueue q) { queue = q; }
@@ -314,7 +316,7 @@ the {@code BlockingQueue} in another thread.
 Java Collections Framework</a>.
 
 ## 1. SynchronousQueue
-> 一个{@linkplain BlockingQueue blocking queue}，其每个插入操作必须等待另一个线程执行相应的删除操作，反之亦然。
+一个{@linkplain BlockingQueue blocking queue}，其每个插入操作必须等待另一个线程执行相应的删除操作，反之亦然。
   同步队列没有任何内部容量，甚至连一个容量都没有。您不能对同步队列执行{@code peek}操作，因为一个元素只有在您试图删除它时才会出现;你不能(使用任何方法)插入一个元素，除非另一个线程试图移除它;
   您不能进行迭代，因为没有可以迭代的内容。
   队列的<em>头</em>是第一个队列插入线程试图添加到队列中的元素;如果没有这样的排队线程，那么就没有可以删除的元素，{@code poll()}将返回{@code null}。对于其他{@code集合}方法(例如{@code contains})， {@code SynchronousQueue}充当一个空集合。这个队列不允许{@code null}元素。
@@ -324,7 +326,7 @@ Java Collections Framework</a>.
   这个类是<a href> Java集合框架</a>的成员。
 
 ## 2. ArrayBlockingQueue
-> 一个依靠数组支持的有界{@linkplain BlockingQueue blocking queue}。这个队列对元素FIFO(先进先出)排序。 
+一个依靠数组支持的有界{@linkplain BlockingQueue blocking queue}。这个队列对元素FIFO(先进先出)排序。 
   队列的<em>头</em>是队列中存在时间最长的元素。 
   队列的<em>尾</em>是队列中出现时间最短的元素。
   新元素插入到队列的尾部，队列检索操作获取队列头部的元素。
@@ -336,3 +338,6 @@ Java Collections Framework</a>.
   公平性通常会降低吞吐量，但会降低可变性并避免饥饿。
   这个类及其迭代器实现了{@link集合}和{@link迭代器}接口的所有<em>可选的</em>方法。
   这个类是<a href> Java集合框架</a>的成员。
+  
+## 3. PriorityBlockingQueue
+PriorityBlockingQueue是一个带优先级的 队列，而不是先进先出队列。元素按优先级顺序被移除，该队列也没有上限（看了一下源码，PriorityBlockingQueue是对 PriorityQueue的再次包装，是基于堆数据结构的，而PriorityQueue是没有容量限制的，与ArrayList一样，所以在优先阻塞 队列上put时是不会受阻的。虽然此队列逻辑上是无界的，但是由于资源被耗尽，所以试图执行添加操作可能会导致 OutOfMemoryError），但是如果队列为空，那么取元素的操作take就会阻塞，所以它的检索操作take是受阻的。另外，往入该队列中的元 素要具有比较能力。
