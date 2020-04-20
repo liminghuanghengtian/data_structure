@@ -330,14 +330,123 @@ Java Collections Framework</a>.
   队列的<em>头</em>是队列中存在时间最长的元素。 
   队列的<em>尾</em>是队列中出现时间最短的元素。
   新元素插入到队列的尾部，队列检索操作获取队列头部的元素。
-  这是一个经典的“有界缓冲”，其中一个固定大小的数组容纳由生产者插入并由消费者提取的元素。 
+  这是一个经典的“有界缓冲”，其中一个**固定大小的数组**容纳由生产者插入并由消费者提取的元素。 
   一旦创建，容量就不能更改。 
   试图{@code put}将一个元素放入一个满队列将导致操作阻塞;尝试{@code take}从空队列中获取元素同样会阻塞。   
-  该类支持一个可选的公平性策略，用于对正在等待的生产者和消费者线程进行排序。 
+  该类支持一个**可选的公平性策略**，用于对正在等待的生产者和消费者线程进行排序。 
   默认情况下，不保证这种顺序。但是，将公平性设置为{@code true}的队列将按FIFO顺序授予线程访问权。
   公平性通常会降低吞吐量，但会降低可变性并避免饥饿。
-  这个类及其迭代器实现了{@link集合}和{@link迭代器}接口的所有<em>可选的</em>方法。
+  这个类及其迭代器实现了{@link Collection}和{@link Iterator}接口的所有<em>可选的</em>方法。
   这个类是<a href> Java集合框架</a>的成员。
   
 ## 3. PriorityBlockingQueue
-PriorityBlockingQueue是一个带优先级的 队列，而不是先进先出队列。元素按优先级顺序被移除，该队列也没有上限（看了一下源码，PriorityBlockingQueue是对 PriorityQueue的再次包装，是基于堆数据结构的，而PriorityQueue是没有容量限制的，与ArrayList一样，所以在优先阻塞 队列上put时是不会受阻的。虽然此队列逻辑上是无界的，但是由于资源被耗尽，所以试图执行添加操作可能会导致 OutOfMemoryError），但是如果队列为空，那么取元素的操作take就会阻塞，所以它的检索操作take是受阻的。另外，往入该队列中的元 素要具有比较能力。
+PriorityBlockingQueue是一个带优先级的队列，而**不是先进先出**队列。元素按优先级顺序被移除，该队列也没有上限（看了一下源码，PriorityBlockingQueue是对 PriorityQueue的再次包装，是基于**堆数据结构**的，而PriorityQueue是没有容量限制的，与ArrayList一样，所以在优先阻塞 队列上**put时是不会受阻的**。虽然此队列**逻辑上是无界**的，但是由于资源被耗尽，所以试图执行添加操作可能会导致 OutOfMemoryError），但是如果队列为空，那么取元素的操作take就会阻塞，所以它的检索操作**take是受阻**的。另外，往入该队列中的元 素要具有比较能力。
+
+### 特性
+1. 物理结构上是数组，逻辑结构上是堆，初始容量11（因为`queue[0]`不存储数据），最大容量`MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;`
+2. 堆，即有序的完全二叉树[^heap]
+3. `put`/`offer`方法写入线程在数组满时不会阻塞，`take`方法执行线程在数组空时会阻塞
+4. `take`是从队头（`queue[0]`）获取
+
+### 3.1 put非阻塞操作
+1. 通过lock保证多线程执行put，存入数据是安全的
+2. put操作（写入）是非阻塞的，容量满11了的话可以扩容，但是扩容操作需要获取扩容锁
+3. 数据插入通过比较器实现堆修复，堆修复过程中即完成数据插入
+4. size增加并通知take阻塞的锁从等待转入锁池，获取数据
+5. put操作的线程释放lock锁，take进入RUNNABLE，等待调度
+```java
+    public void put(E e) {
+        offer(e); // never need to block
+    }
+
+    public boolean offer(E e) {
+        if (e == null)
+            throw new NullPointerException();
+        final ReentrantLock lock = this.lock;
+        lock.lock();
+        int n, cap;
+        Object[] array;
+        
+        //如果队列满了，就调用tryGrow进行扩容
+        while ((n = size) >= (cap = (array = queue).length))
+            tryGrow(array, cap);
+        try {
+            Comparator<? super E> cmp = comparator;
+            if (cmp == null)
+                siftUpComparable(n, e, array);
+            else
+                siftUpUsingComparator(n, e, array, cmp);
+            size = n + 1;
+            notEmpty.signal();// 通知take释放，数据已存入，可以获取了
+        } finally {
+            lock.unlock();
+        }
+        return true;
+    }
+```
+#### 3.1.1 如何排序优先级？
+这个过程叫做堆的有序化。此处根据Comparator可以判断是大根堆还是小根堆。
+1. 从队尾开始，一直往前根据堆的算法性质查找parent节点
+2. 和parent节点比对，若是比parent小，则插入在parent的子节点；否则将parent元素交换到子元素位置，然后持续往前查找parent节点
+3. 当插入元素大于parent节点时，
+```java
+    /**
+     * 通过Comparator上移到堆的正确位置 
+     */
+    private static <T> void siftUpUsingComparator(int k, T x, Object[] array,
+                                       Comparator<? super T> cmp) {
+        // 从队尾元素开始一直往前查找父节点
+        while (k > 0) {
+            // 父节点索引
+            int parent = (k - 1) >>> 1;
+            Object e = array[parent];
+            
+            // 新增元素x和父节点array[parent]比较，元素x大于parent节点，则直接添加到parent的子节点处
+            if (cmp.compare(x, (T) e) >= 0)
+                break;
+            
+            // parent移动到当前判断的位置
+            array[k] = e;
+            // k指向parent继续遍历，查找元素何时的插入位置K
+            k = parent;
+        }
+        
+        // 查找到插入位置K，新增元素存入
+        array[k] = x;
+    }
+```
+
+### 扩容操作
+```java
+ private void tryGrow(Object[] array, int oldCap) {
+        lock.unlock(); // must release and then re-acquire main lock
+        Object[] newArray = null;
+        if (allocationSpinLock == 0 &&
+            UNSAFE.compareAndSwapInt(this, allocationSpinLockOffset,
+                                     0, 1)) {
+            try {
+                int newCap = oldCap + ((oldCap < 64) ?
+                                       (oldCap + 2) : // grow faster if small
+                                       (oldCap >> 1));
+                if (newCap - MAX_ARRAY_SIZE > 0) {    // possible overflow
+                    int minCap = oldCap + 1;
+                    if (minCap < 0 || minCap > MAX_ARRAY_SIZE)
+                        throw new OutOfMemoryError();
+                    newCap = MAX_ARRAY_SIZE;
+                }
+                if (newCap > oldCap && queue == array)
+                    newArray = new Object[newCap];
+            } finally {
+                allocationSpinLock = 0;
+            }
+        }
+        if (newArray == null) // back off if another thread is allocating
+            Thread.yield();
+        lock.lock();
+        if (newArray != null && queue == array) {
+            queue = newArray;
+            System.arraycopy(array, 0, newArray, 0, oldCap);
+        }
+    }
+```
+[^heap]: 所有叶子节点都出现在k层或k-1层；对任一节点，若其右子树的最大层次为L，则其左子树最大层次为L或L+1

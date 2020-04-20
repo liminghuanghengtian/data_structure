@@ -168,3 +168,8 @@ private void set(ThreadLocal<?> key, Object value) {
         rehash();
 }
 ```
+
+# 无锁CAS保证原子性
+原理解释：CAS全称（Compare Ans Swap），是一种用于在多线程环境下实现同步功能的机制。CAS 操作包含三个操作数 -- 内存位置、预期数值和新值。CAS 的实现逻辑是将内存位置处的数值与预期数值相比较，若相等，则将内存位置处的值替换为新值。若不相等，则不做任何操作。
+CAS在java层没有直接实现，是通过unsafe类进入native实现的。
+ABA问题处理措施是对每一次 CAS 操作设置版本号。
