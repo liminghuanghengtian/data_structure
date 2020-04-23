@@ -44,18 +44,26 @@ public class StringDemo {
         System.out.println("a.equals(b)? " + a.equals(b) + "\n");
     }
     
+    /**
+     * b和d在堆中连接生成了新的"abcd"，调用intern()后发现常量池没有"abcd"，那么就放入堆中的"abcd"的引用，之后返回值为这个引用;
+     * a直接看常量池的"abcd"，结果发现是堆中的"abcd"的引用，直接返回这个引用，所以a和c相同对象，都是堆里面连接生成的"abcd"的地址，所以打印出true。
+     */
     public static void m4() {
+        String b = new String("ab");
+        String d = new String("cd");
+        String c = (b + d).intern();
+        
         String a = "ab" + "c" + "d";
-        String b = new String("abcd");
-        String c = b.intern();
-        String d = new String("abcd").intern();
+        String e = new String("abcd").intern();
         System.out.println("a.hashCode() = " + a.hashCode());
         System.out.println("b.hashCode() = " + b.hashCode());
         System.out.println("c.hashCode() = " + c.hashCode());
-        System.out.println("a == b? " + (a == b));
+        System.out.println("d.hashCode() = " + d.hashCode());
+        System.out.println("e.hashCode() = " + e.hashCode());
+        
         System.out.println("a == c? " + (a == c)); // 注意：这里为true
-        System.out.println("a == d? " + (a == d)); // 注意：这里为true
-        System.out.println("a.equals(b)? " + a.equals(b) + "\n");
+        System.out.println("c == e? " + (c == e)); // 注意：这里为true
+        System.out.println("a.equals(e)? " + a.equals(e) + "\n");
     }
     
     public static void m5() {
@@ -86,8 +94,8 @@ public class StringDemo {
         // m1();
         // m2();
         // m3();
-        // m4();
-        m5();
-        m6(params);
+        m4();
+        // m5();
+        // m6(params);
     }
 }

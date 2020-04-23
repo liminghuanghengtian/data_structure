@@ -70,5 +70,7 @@ public int compareTo(String anotherString) {
         return len1 - len2;
     }
 ```
-## [String.intern()](https://blog.csdn.net/soonfly/article/details/70147205?depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-1&utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-1)
-new String都是在堆上创建字符串对象。当调用 intern() 方法时，编译器会将字符串添加到常量池中（stringTable维护），并返回指向该常量的引用。
+## [String.intern()](https://blog.csdn.net/qq_34115899/article/details/86583262)
+重用String对象，以节省内存消耗。
+
+如果运行时常量池中已经包含一个等于此 String 对象内容的字符串，则返回常量池中该字符串的引用；如果没有，在jdk1.6中，将此String对象添加到常量池中，然后返回这个String对象的引用（此时引用的串在常量池）。在jdk1.7中，放入一个引用，指向堆中的String对象的地址，返回这个引用地址（此时引用的串在堆）。根据《java虚拟机规范 Java SE 8版》记录，如果某String实例所包含的Unicode码点序列与CONSTANT——String_info结构所给出的序列相同，而之前又曾在该实例上面调用过String.intern方法，那么此次字符串常量获取的结果将是一个指向相同String实例的引用。Unicode码点序列的直接理解：这玩意不就是字符连起来看equals是否相同不就完了吗！
