@@ -43,6 +43,7 @@ public class TProxyHandler<T> implements InvocationHandler {
     }
     
     public static void main(String args[]) {
+        new String("adv");
         TProxyHandler<RealSubject> proxy = new TProxyHandler<>();
         //绑定该类实现的所有接口
         Subject sub = (Subject) proxy.bind(new RealSubject());
