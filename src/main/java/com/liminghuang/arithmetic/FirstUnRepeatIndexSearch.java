@@ -2,7 +2,10 @@ package com.liminghuang.arithmetic;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
 /**
@@ -19,6 +22,36 @@ import java.util.Stack;
  */
 public class FirstUnRepeatIndexSearch {
     private static final String TARGET = "abecdebadecfgbhd";
+    
+    public static void main(String[] args) {
+        search1();
+    }
+    
+    public static void search1() {
+        // 双向链表实现的有序Map
+        LinkedHashMap<Character, Integer> repeatMap = new LinkedHashMap<Character, Integer>();
+        for (int i = 0; i < TARGET.length(); i++) {
+            char t = TARGET.charAt(i);
+            Integer count;
+            if ((count = repeatMap.get(t)) != null) {// 字符已存在，累加出现次数
+                repeatMap.put(t, ++count);
+                System.out.println(t + " 出现次数： " + count);
+            } else {
+                System.out.println("首次存入： " + t);
+                repeatMap.put(t, 1);
+            }
+        }
+        
+        for (Iterator<Map.Entry<Character, Integer>> it = repeatMap.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry<Character, Integer> entry = it.next();
+            System.out.println("entry：" + entry.getKey() + "=" + entry.getValue());
+            
+            if (entry.getValue() == 1) {
+                System.out.println("第一个不重复的字符：" + entry.getKey());
+                break;
+            }
+        }
+    }
     
     
     public void search() {
@@ -37,7 +70,7 @@ public class FirstUnRepeatIndexSearch {
         }
     }
     
-    public static void main(String[] args) {
+    public static void main1(String[] args) {
         char[] targetChar = TARGET.toCharArray();
         System.out.println(targetChar);
         
