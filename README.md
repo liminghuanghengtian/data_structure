@@ -86,19 +86,21 @@ public interface Set<E> extends Collection<E>{
 ```
 JDK提供实现Set接口的3个实用类：***HashSet***、***TreeSet***、***LinkedHashSet***;
 #### 2.1 [HashSet](./src/main/java/com/liminghuang/set/README.md)
-采用Hash表实现了`Set`接口（源码使用的是`HashMap`结构存储），一个`HashSet`对象中的元素存储在一个Hash表中，元素没有固定顺序；Hash表结构支持大数据量的访问，所以比线性列表快
+
+采用Hash表实现了`Set`接口（内部使用的是`HashMap`结构存储），一个`HashSet`对象中的元素存储在一个`Hash`表中，**元素没有固定顺序**；Hash表结构**支持大数据量的访问**，所以比线性列表快
 
 #### 2.2 TreeSet
-实现了`SortedSet`接口（源码中未发现，待研究），采用一种有序树的结构存储集合中的元素，`TreeSet`对象中的元素按照升序排序
+
+实现了`SortedSet`接口（源码中未发现，待研究），采用一种**有序树的结构**存储集合中的元素，`TreeSet`对象中的元素按照升序排序
 
 #### 2.3 [LinkedHashSet](./src/main/java/com/liminghuang/set/README.md)
-实现了`Set`接口,采用Hash表和链表相结合的结构(即`LinkedHashMap`)存储集合中的元素，元素具有固定的顺序，集中了`HashSet`与`TreeSet`的优点，即能保证顺序又能够具有较高的存取效率（待研究）
+实现了`Set`接口,**采用`Hash`表和双端链表**相结合的结构(即`LinkedHashMap`)存储集合中的元素，元素**具有固定的顺序**，集中了`HashSet`与`TreeSet`的优点，即能保证顺序又能够具有较高的存取效率（待研究）
 
 ### 3. List
-List是一种有序集合，继承自Collection接口。除了Collection中的方法，List接口还增加如下操作：
-- 按位置存取元素，按照元素在list中的序号对其进行操作
-- 查找，在list中搜寻指定的对象并返回该对象的序号
-- 遍历，使用ListIterator实现List的遍历
+List是一种有序集合，继承自`Collection`接口。除了`Collection`中的方法，List接口还增加如下操作：
+- 按位置存取元素，按照元素**在list中的序号**对其进行操作
+- 查找，在list中**搜寻指定的对象**并返回该对象的序号
+- 遍历，使用`ListIterator`实现List的遍历
 - 截取子List，建立List视图
 
 ```java
@@ -124,13 +126,13 @@ public interface List<E> extends Collection<E>{
 }
 ```
 #### 3.1 [ArrayList](./src/main/java/com/liminghuang/list/README.md)
-采用**可变大小的数组**实现List接口，默认增长为1.5倍。ArrayList会随着元素的增加其容积自动扩大，非同步。除此之外，几乎与Vectorc操作是同等的。
+采用**可变大小的数组**实现List接口，默认**增长为1.5倍**。ArrayList会随着元素的增加其容积**自动扩大**，非同步。除此之外，几乎与`Vector`操作是同等的。
 
 #### 3.2 Vector
-采用**可变体积的数组**实现List接口，默认增长为**两倍**。该类像数组一样，可以通过索引序号对所包含的元素进行访问，同步的(线程安全)。
+采用**可变体积的数组**实现List接口，默认增长为**两倍**。该类像数组一样，可以通过索引序号对所包含的元素进行访问，**同步的(线程安全)**。
 
 #### 3.3 [LinkedList](./src/main/java/com/liminghuang/list/README.md)
-采用**链表结构**实现List接口。除了List中的方法，该类还提供了在List的开头和结尾进行get，remove和insert等操作。这些操作使得LinkedList可以用来实现**堆栈、队列或双端队列**，非同步(线程不安全)。
+采用**链表结构**实现List接口。除了List中的方法，该类还提供了**在List的开头和结尾进行`get`，`remove`和`insert`等操作**。这些操作使得LinkedList可以用来实现**堆栈、队列或双端队列**，非同步(线程不安全)。
 
 ### 4. Stack
 继承Vector，所以也是线程安全，同步的
