@@ -1,4 +1,4 @@
-package com.liminghuang.thread;
+package com.liminghuang.thread.tl;
 
 /**
  * ProjectName: data_structure
@@ -13,9 +13,9 @@ package com.liminghuang.thread;
  * @author Adaministrator
  */
 public class TestThreadLocal {
-    private static final ThreadLocal<Integer> sThreadLocal = new ThreadLocal<>();
-    private static final InheritableThreadLocal<Integer> sInheritThreadLocal = new InheritableThreadLocal<>();
-    final ThreadLocal<String> mThreadLocal = new ThreadLocal<>();
+    private static final ThreadLocal<Integer> sThreadLocal = new ThreadLocal<Integer>();
+    private static final InheritableThreadLocal<Integer> sInheritThreadLocal = new InheritableThreadLocal<Integer>();
+    final ThreadLocal<String> mThreadLocal = new ThreadLocal<String>();
     
     public static void main(String[] args) {
         TestThreadLocal demo = new TestThreadLocal();

@@ -1,9 +1,9 @@
-package com.liminghuang.thread;
+package com.liminghuang.thread.tl;
 
 /**
  * ProjectName: example
  * PackageName: com.liminghuang.thread
- * Description:
+ * Description: 线程读取自己甚至的内容
  * <p>
  * CreateTime: 2017/7/13 22:29
  * Modifier: Adaministrator

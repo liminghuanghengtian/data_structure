@@ -1,4 +1,4 @@
-package com.liminghuang.thread;
+package com.liminghuang.thread.lock;
 
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -14,7 +14,7 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * @author Adaministrator
  */
-public class Test1 {
+public class TestLock {
     // 公平锁会按开启顺序进行锁分配，此处非公平锁
     private ReentrantLock lock = new ReentrantLock(false);
     private int data = 100;
@@ -44,7 +44,7 @@ public class Test1 {
     }
     
     public static void main(String[] args) throws InterruptedException {
-        final Test1 test1 = new Test1();
+        final TestLock test1 = new TestLock();
         int k = 100;
         int i = 0;
         int j = 0;
