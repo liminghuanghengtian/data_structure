@@ -1,15 +1,12 @@
-package com.liminghuang.question;
+package com.liminghuang.leetcode;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * ProjectName: example
- * PackageName: com.liminghuang.question
+ * PackageName: com.liminghuang.leetcode
  * Description: @see <a href="https://leetcode-cn.com/problems/first-unique-character-in-a-string/">387.
  * 字符串中的第一个唯一字符</a>
  * <p>

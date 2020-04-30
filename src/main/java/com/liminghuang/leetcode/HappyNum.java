@@ -1,15 +1,11 @@
-package com.liminghuang.question;
+package com.liminghuang.leetcode;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
  * ProjectName: example
- * PackageName: com.liminghuang.question
+ * PackageName: com.liminghuang.leetcode
  * Description: @see <a href="https://leetcode-cn.com/problems/happy-number/">快乐数</a>
  * <p>
  * CreateTime: 2020/4/30 14:11
