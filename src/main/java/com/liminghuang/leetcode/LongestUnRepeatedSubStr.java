@@ -36,17 +36,13 @@ public class LongestUnRepeatedSubStr {
             for (int tail = 0, head = 0; tail < n; tail++) {
                 char c;
                 if (map.containsKey(c = s.charAt(tail))) {
-                    System.out.println("old head: " + head);
                     head = Math.max(map.get(c), head);
-                    System.out.println("new head: " + head);
                 }
                 maxL = Math.max(maxL, tail - head + 1);
                 map.put(c, tail + 1);
-                System.out.println(map);
                 
                 // 优化
                 if (n - head <= maxL) {
-                    System.out.println("break");
                     break;
                 }
             }
