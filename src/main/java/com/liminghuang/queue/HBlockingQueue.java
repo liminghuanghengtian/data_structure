@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 public class HBlockingQueue {
     private static final String TAG = "HBlockingQueue";
     private static final Logger log = Logger.getLogger(TAG);
+    // 定长
     private static BlockingQueue<Integer> dataQueue = new ArrayBlockingQueue<Integer>(5, true);
     
     public static void main(String[] args) {
