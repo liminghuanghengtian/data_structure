@@ -660,13 +660,15 @@ final class LinkedEntryIterator extends LinkedHashIterator
     }
 ```
 # 4. [Android ArrayMap](https://www.jianshu.com/p/1fb660978b14)
+## 存储结构
 ![ArrayMap](../../../../resources/drawable/ArrayMap.png)
 ## 特性
-- 类似SparseArray，内部采用**两个数组，一组存储key的hash值，一组存储key和value**；
-- 与SparseArray不同的是，**`object[]`数组是hash值存放`int[]`数组的两倍大小**
-- 通过二分查找key#hash值所在数组的`index`索引位置，乘以2即`object[]`数组中存放key的索引位置；并比对key和hash值；
-- hash值由系统分配还是`hashcode()`方法来产生可自定义
-- todo
+1. 类似SparseArray，内部采用**两个数组，一组存储key的hash值，一组存储key和value**；
+2. 与SparseArray不同的是，**`object[]`数组是hash值存放`int[]`数组的两倍大小**
+3. 通过二分查找key#hash值所在数组的`index`索引位置，乘以2即`object[]`数组中存放key的索引位置，并比对key和hash值是否匹配；不匹配则执行collision search???
+4. hash值由系统分配还是`hashcode()`方法来产生可自定义
+## 4.1 查找过程图示
+![ArrayMap_Select](../../../../resources/drawable/ArrayMap_Select.png)
 
 
 # 5. ConcurrentHashMap
