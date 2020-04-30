@@ -2,24 +2,23 @@
 [第三方链表和红黑树分析](https://blog.csdn.net/shenshaoming/article/details/95469460)
 ![HashMap数据结构](../../../../resources/drawable/HashMap.png)
 ## 特性
-1. 默认初始长度为16，数组长度必须是2的幂（为了key映射到index时候的hash算法更高效，通过`（n-1）& hash`值的位运算，等效于取模），扩容是之前容量的两倍
-2. hash算法结果是均匀的，即能保证index较为均匀；java8的hash算法通过key.hashcode，将其高16位和低16位做异或（`h ^ h>>>16`），这个综合考虑了速度，作用和质量
-3. java7 hash碰撞通过链表解决，总是**添加到链头**（设计者认为后插入的数据被查找的可能性大）；java8在链表的长度**超过6（大于等于TREEIFY_THRESHOLD - 1），将链表转为红黑树**(查找效率快，时间复杂度O（logN）)，并没有解决hash碰撞的问题，只是通过红黑树优秀的查找性能来解决问题
-4. 扩容是创建新长度数组，然后将原数组内容**重新计算index**后放入新数组；java8 仅重新计算index，省略重新hash过程，所以新index要么等于原index，要么原index加上原长（这点从index的位运算可以看出）；resize的过程，均匀的把之前的冲突的节点分散到新的bucket了
-5. 高并发下出现链表的环形结构。当调用Get查找一个**不存在的Key**，而这个Key的Hash结果恰好在index位置的时候，由于位置index处带有环形链表，所以程序将会进入死循环（链表中不存元素，一直遍历）！
+1. 默认**初始长度为16**，数组**长度必须是2的幂**（为了key映射到index时候的hash算法更高效，通过`（n-1）& hash`值的位运算，**等效于取模**），扩容是之前容量的两倍
+2. hash算法结果是均匀的，即能保证index较为均匀；java8的hash算法通过基于`key.hashcode()`，将其**高16位和低16位做异或（`h ^ h>>>16`）**，这个综合考虑了速度，作用和质量
+3. java7 hash碰撞通过链表解决，总是**添加到链头**（设计者认为后插入的数据被查找的可能性大）；java8在链表的长度**超过8（`binCount >= TREEIFY_THRESHOLD - 1`，`binCount`从0开始计数），将链表转为红黑树**(**查找效率快，时间复杂度O（logN）**)，并没有解决hash碰撞的问题，只是通过红黑树优秀的查找性能来解决问题
+4. 扩容是创建新长度数组，然后将原数组内容**重新计算index**后放入新数组；java8 仅重新计算index，省略重新计算hash过程，所以新index要么等于原index，要么原index加上原长（这点从index的位运算可以看出）；resize的过程，均匀的把之前的冲突的节点分散到新的bucket了
+5. 高并发下出现链表的环形结构。当调用`get`查找一个**不存在的Key**，而这个Key的Hash结果恰好在index位置的时候，由于位置index处带有环形链表，所以程序将会进入死循环（链表中不存在元素，一直遍历）！
 
 ## 1.1 put的实现
 put函数大致的思路为：
-1. 对key的hashCode()做hash，然后再计算index;
-2. 如果没碰撞直接放到bucket里；
-3. 如果碰撞了，以链表的形式存在buckets后；
-4. 如果碰撞导致链表过长(大于等于TREEIFY_THRESHOLD=8？？？)，就把链表转换成红黑树；
-5. 如果节点已经存在就替换old value(保证key的唯一性)
-6. 如果bucket满了(超过load factor*current capacity)，就要resize。
+1. 对`key.hashCode()`做异或hash，然后再计算index;
+2. 如果索引index处**没碰撞直接放到bucket里**；
+3. 如果碰撞了，**以链表的形式存在buckets里，添加到链尾**；
+4. 如果碰撞导致链表过长(大于等于TREEIFY_THRESHOLD=8)，就把**链表转换成红黑树(当整个HashMap内数组长度未超过64时，不会红黑树化，通过扩容`resize()`解决频繁碰撞更为合适)**；
+5. 如果**节点已经存在就替换old value**(保证key的唯一性)
+6. 如果bucket数组将满(超过`load factor*current capacity`)，就要`resize()`。
 结合代码分析：
 ```java
 public V put(K key, V value) {
-    // 对key的hashcode（）做定义的hash方法
     return putVal(hash(key), key, value, false, true);
 }
 
@@ -28,7 +27,7 @@ public V put(K key, V value) {
  */
 static final int hash(Object key) {
     int h;
-    return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);// key hash值的高16位与低16位异或    
+    return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);// key的hash值，高16位与低16位异或    
 }
 
 final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
@@ -216,11 +215,11 @@ final Node<K,V>[] resize() {
     return newTab;
 }
 ```
-## 1.3 获取节点（根据key）
+## 1.3 查找节点（根据key）
 查找过程设想：
-1. 查找条件是传入key，根据hash方法计算hash值
-2. 判断数组是否非空，非空则3，否则直接返回null
-3. index索引处是否存在节点，不存在则返回null，存在则比对hash和key是否相等，相等则返回该节点value，否则进入4；
+1. 查找条件是传入key，根据`hash()`方法计算hash值
+2. 判断数组是否非空，非空则转到3，否则直接返回null
+3. index索引处是否存在节点，不存在则返回null，存在则**比对hash和key是否匹配**，匹配则返回该节点value，否则进入4；
 4. 判断桶内是否还有更多节点，无其他更多节点则返回null, 否则判断桶的首节点类型，为红黑树，则在红黑树内查找，否则在链表内遍历查找（条件依旧是hash和key都匹配）
 
 ```java
@@ -329,9 +328,9 @@ final Node<K,V> removeNode(int hash, Object key, Object value,
 红黑树是一种含有红黑结点并能**自平衡**的二叉查找树。它必须满足下面性质：
 
 - 性质1：每个节点要么是黑色，要么是红色。
-- 性质2：根节点是黑色。
-- 性质3：每个叶子节点（NIL）是黑色。
-- 性质4：每个红色结点的两个子结点一定都是黑色。
+- 性质2：**根节点是黑色**。
+- 性质3：**每个叶子节点（NIL）是黑色**。
+- 性质4：每个**红色结点的两个子结点一定都是黑色**。
 - 性质5：任意一结点到每个叶子结点的路径都包含数量相同的黑结点。这种平衡为**黑色完美平衡**。
 
 前面讲到红黑树能自平衡，它靠的是什么？三种操作：左旋、右旋和变色。
@@ -345,12 +344,11 @@ final Node<K,V> removeNode(int hash, Object key, Object value,
 红黑树总是通过旋转和变色达到自平衡。
 
 # 2. HashTable(JDK8)
-同Hashmap的不同：
+同HashMap的不同：
 1. 初始容量11
-2. 线程安全，同步的（方法上加同步锁synchronized）
-3. hash算法(采用取模低效，因为长度非2的指数次的长度)：`int hash = key.hashCode();
-                  int index = (hash & 0x7FFFFFFF) % tab.length;`
-4. 扩容通过rehash，扩容长度为原长两倍加一，最大长度`MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;`
+2. 线程安全，同步的（通过每个方法上加同步锁synchronized）
+3. hash算法(采用取模低效，因为长度非2的指数次的长度)：`int hash = key.hashCode(); int index = (hash & 0x7FFFFFFF) % tab.length;`
+4. 扩容通过rehash，扩容长度为**原长两倍加一**，最大长度`MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;`
 
 # 3. LinkedHashMap(JDK8)
 ## 特性
