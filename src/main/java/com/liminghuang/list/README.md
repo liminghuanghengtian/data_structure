@@ -53,7 +53,7 @@
 依其名ArrayList，一个动态数组。
 
 # 2. LinkedList
-LinkedList类实现了Deque接口规范（双端队列），所以LinkedList，在插入和删除操作，效率会比较高。
+LinkedList类采用Deque规范（双端队列）的链表结构实现List接口，所以LinkedList在**插入**和**删除**操作效率会比较高。而且还提供了在List的开头和结尾进行`get`，`remove`，`insert`等操作。
 
 - poll（）：将队首的元素删除，并返回该元素。
 - peek（）：返回队首的元素，但不进行删除操作。

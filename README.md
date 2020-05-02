@@ -272,4 +272,34 @@ public class Stack<E> extends Vector<E> {
 
 仔细观察源码，不难发现，类的头部声明中推荐开发者自主实现Deque接口来替代Stack。
 ### 5. [Map](./src/main/java/com/liminghuang/map/README.md)
+Map包含一系列的键值（key-value）的映射关系。
+```java
+public interface Map<K ,V>{
+    // 基本操作
+    V put(K key,V value);
+    V get(Object key);
+    V remove(Object key);
+    boolean containsKey(Object key);
+    boolean containsValue(Object value);
+    int size();
+    boolean isEmpty();
+    
+    // 整体批操作
+    void putAll(Map<? extends K, ? extends V> m);
+    void clear();
+    
+    // 集合视图
+    public Set<K> keySet();
+    public Collection<V> values();
+    public Set<Map.Entry<K,V>> entrySet();
+    
+    // 为EntrySet元素定义的接口
+    public interface Entry{
+        K getKey();
+        V getValue();
+        V setValue(V value);
+    }
+}
+```
+
 ### 6. [SparseArray](https://www.jianshu.com/p/186d1e466aae)

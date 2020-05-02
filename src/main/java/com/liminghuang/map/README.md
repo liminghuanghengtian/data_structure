@@ -7,6 +7,7 @@
 3. java7 hash碰撞通过链表解决，总是**添加到链头**（设计者认为后插入的数据被查找的可能性大）；java8在链表的长度**超过8（`binCount >= TREEIFY_THRESHOLD - 1`，`binCount`从0开始计数），将链表转为红黑树**(**查找效率快，时间复杂度O（logN）**)，并没有解决hash碰撞的问题，只是通过红黑树优秀的查找性能来解决问题
 4. 扩容是创建新长度数组，然后将原数组内容**重新计算index**后放入新数组；java8 仅重新计算index，省略重新计算hash过程，所以新index要么等于原index，要么原index加上原长（这点从index的位运算可以看出）；resize的过程，均匀的把之前的冲突的节点分散到新的bucket了
 5. 高并发下出现链表的环形结构。当调用`get`查找一个**不存在的Key**，而这个Key的Hash结果恰好在index位置的时候，由于位置index处带有环形链表，所以程序将会进入死循环（链表中不存在元素，一直遍历）！
+6. 键类**明确定义`hashcode()`和`equals()`**
 
 ## 1.1 put的实现
 put函数大致的思路为：
@@ -215,7 +216,7 @@ final Node<K,V>[] resize() {
     return newTab;
 }
 ```
-## 1.3 查找节点（根据key）
+## 1.3 根据key查找节点
 查找过程设想：
 1. 查找条件是传入key，根据`hash()`方法计算hash值
 2. 判断数组是否非空，非空则转到3，否则直接返回null
@@ -315,33 +316,37 @@ final Node<K,V> removeNode(int hash, Object key, Object value,
 }
 ```
 
-## 1.5 红黑树介绍
+## 1.5 红黑树
 
-### 1.5.1 二叉查找树特征
-- 任意节点的左子树不空，则左子树上所有节点的值均小于根节点的值
-- 任意节点的右子树不空，则右子树上所有节点的值均大于根节点的值
-- 任意节点左右子树也一定分别为二叉排序树
-- 没有键值相等的节点
+### 二叉查找树特征
+- 任意节点的<font color="orange">左子树不空，则左子树上所有节点的值均**小于**根节点的值</font>
+- 任意节点的<font color="orange">右子树不空，则右子树上所有节点的值均**大于**根节点的值</font>
+- <font color="orange">任意节点**左右子树**也一定分别为**二叉排序树**</font>
+- **没有键值相等的节点**
 
-### 1.5.2 [红黑树](https://www.jianshu.com/p/e136ec79235c)定义和性质
+### [红黑树（R-B tree）](https://www.jianshu.com/p/e136ec79235c)定义和性质
+
+#### 典型的红黑树图示
+
+![典型红黑树](../../../../resources/drawable/R-B_Tree.png)
 
 红黑树是一种含有红黑结点并能**自平衡**的二叉查找树。它必须满足下面性质：
-
-- 性质1：每个节点要么是黑色，要么是红色。
+- 性质1：每个节点要么是**黑色**，要么是**红色**。
 - 性质2：**根节点是黑色**。
-- 性质3：**每个叶子节点（NIL）是黑色**。
+- 性质3：**每个叶子节点（NIL）是黑色**，且为`null`。
 - 性质4：每个**红色结点的两个子结点一定都是黑色**。
-- 性质5：任意一结点到每个叶子结点的路径都包含数量相同的黑结点。这种平衡为**黑色完美平衡**。
+- 性质5：任意一结点到每个叶子结点的路径都**包含数量相同的黑结点**。这种平衡为**黑色完美平衡**。
+- 性质6：新加入到红黑树的节点为**红色节点**。
 
-前面讲到红黑树能自平衡，它靠的是什么？三种操作：左旋、右旋和变色。
+前面讲到红黑树能自平衡，它靠的是什么？三种操作：左旋、右旋和变色。？？？
 
-**左旋**：以某个结点作为支点(旋转结点)，其右子结点变为旋转结点的父结点，右子结点的左子结点变为旋转结点的右子结点，左子结点保持不变。如图3。
+- **左旋**：以某个结点作为支点(旋转结点)，其右子结点变为旋转结点的父结点，右子结点的左子结点变为旋转结点的右子结点，左子结点保持不变。
 
-**右旋**：以某个结点作为支点(旋转结点)，其左子结点变为旋转结点的父结点，左子结点的右子结点变为旋转结点的左子结点，右子结点保持不变。如图4。
+- **右旋**：以某个结点作为支点(旋转结点)，其左子结点变为旋转结点的父结点，左子结点的右子结点变为旋转结点的左子结点，右子结点保持不变。
 
-**变色**：结点的颜色由红变黑或由黑变红。
+- **变色**：结点的颜色由红变黑或由黑变红。
 
-红黑树总是通过旋转和变色达到自平衡。
+红黑树总是<font color="red">通过**旋转和变色**达到**自平衡**</font>。
 
 # 2. HashTable(JDK8)
 同HashMap的不同：
@@ -558,7 +563,7 @@ void afterNodeAccess(Node<K,V> e) { // move node to last
 ```
 
 ## 3.5 迭代器
-LinkedHashIterator是三种迭代器的模板，包含主要的方法：`hasNext()`,`nextNode()`，`remove()`以及主要的状态属性：`next`，`current`,`expectModCount`
+`LinkedHashIterator`是三种迭代器的模板，包含主要的方法：`hasNext()`,`nextNode()`，`remove()`以及主要的状态属性：`next`，`current`,`expectModCount`
 
 ```java
     abstract class LinkedHashIterator {
@@ -652,14 +657,326 @@ LinkedHashIterator是三种迭代器的模板，包含主要的方法：`hasNext
     }
 ```
 
-#### LinkedEntryIterator实现类
+### LinkedEntryIterator实现类
 ```java
 final class LinkedEntryIterator extends LinkedHashIterator
         implements Iterator<Map.Entry<K,V>> {
         public final Map.Entry<K,V> next() { return nextNode(); }
     }
 ```
-# 4. [Android ArrayMap](https://www.jianshu.com/p/1fb660978b14)
+# 4. [TreeMap](https://www.cnblogs.com/LiaHon/p/11221634.html)
+是一种基于树的映射，TreeMap继承`SortedMap`类，保持**键的有序**顺序。它的`put`和`get`操作需要`O(logN)`时间。它要求项目具有某种比较机制，无论是可比较的还是比较的。迭代顺序由这种机制决定。
+
+## 特性
+- 存储键值对通过红黑树实现
+- 键有序，默认情况下通过Key值的自然顺序进行排序；
+- 实现了原型模式，
+
+## 4.1 重要属性
+```java
+/**
+ * 我们前面提到TreeMap是可以自动排序的，默认情况下comparator为null，这个时候按照key的自然顺序进行排
+ * 序，然而并不是所有情况下都可以直接使用key的自然顺序，有时候我们想让Map的自动排序按照我们自己的规则，
+ * 这个时候你就需要传递Comparator的实现类
+ */
+private final Comparator<? super K> comparator;
+
+/**
+ * TreeMap的存储结构既然是红黑树，那么必然会有唯一的根节点。
+ */
+private transient Entry<K,V> root;
+
+/**
+ * Map中key-val对的数量，也即是红黑树中节点Entry的数量
+ */
+private transient int size = 0;
+
+/**
+ * 红黑树结构的调整次数
+ */
+private transient int modCount = 0;
+```
+## 4.2 节点结构
+Entry静态内部类实现了Map的内部接口Entry，提供了红黑树存储结构的java实现，<font color="red">**通过left属性可以建立左子树，通过right属性可以建立右子树，通过parent可以往上找到父节点**。</font>
+
+```java
+static final class Entry<K,V> implements Map.Entry<K,V> {
+    // key,val是存储的原始数据
+    K key;
+    V value;
+    // 定义了节点的左孩子
+    Entry<K,V> left;
+    // 定义了节点的右孩子
+    Entry<K,V> right;
+    // 通过该节点可以反过来往上找到自己的父亲
+    Entry<K,V> parent;
+    // 默认情况下为黑色节点，可调整
+    boolean color = BLACK;
+
+    /**
+     * Make a new cell with given key, value, and parent, and with
+     * {@code null} child links, and BLACK color.
+     */
+    Entry(K key, V value, Entry<K,V> parent) {
+        this.key = key;
+        this.value = value;
+        this.parent = parent;
+    }
+
+    /**
+     * Returns the key.
+     *
+     * @return the key
+     */
+    public K getKey() {
+        return key;
+    }
+
+    /**
+     * Returns the value associated with the key.
+     *
+     * @return the value associated with the key
+     */
+    public V getValue() {
+        return value;
+    }
+
+    /**
+     * Replaces the value currently associated with the key with the given
+     * value.
+     *
+     * @return the value associated with the key before this method was
+     *         called
+     */
+    public V setValue(V value) {
+        V oldValue = this.value;
+        this.value = value;
+        return oldValue;
+    }
+
+    public boolean equals(Object o) {
+        if (!(o instanceof Map.Entry))
+            return false;
+        Map.Entry<?,?> e = (Map.Entry<?,?>)o;
+
+        return valEquals(key,e.getKey()) && valEquals(value,e.getValue());
+    }
+
+    public int hashCode() {
+        int keyHash = (key==null ? 0 : key.hashCode());
+        int valueHash = (value==null ? 0 : value.hashCode());
+        return keyHash ^ valueHash;
+    }
+
+    public String toString() {
+        return key + "=" + value;
+    }
+}
+```
+大体的实现结构图如下：
+![TreeMap](../../../../resources/drawable/TreeMap.png)
+## 4.3 put实现
+
+#### 4.3.1 流程图
+
+![TreeMap_put](H:\IdeaProjects\data_structure\src\main\resources\drawable\TreeMap_put.png)
+
+#### 4.3.2 源码解析
+
+```java
+public V put(K key, V value) {
+    Entry<K,V> t = root;
+    /**
+     * 如果根节点都为null，还没建立起来红黑树，我们先new Entry并赋值给root把红黑树建立起来，这个时候红
+     * 黑树中已经有一个节点了，同时修改操作+1。
+     */
+    if (t == null) {
+        compare(key, key); 
+        root = new Entry<>(key, value, null);
+        size = 1;
+        modCount++;
+        return null;
+    }
+    /**
+     * 如果节点不为null,定义一个cmp，这个变量用来进行二分查找时的比较；定义parent，是new Entry时必须
+     * 要的参数
+     */
+    int cmp;
+    Entry<K,V> parent;
+    // cpr表示有无自己定义的排序规则，分两种情况遍历执行
+    Comparator<? super K> cpr = comparator;
+    if (cpr != null) {
+        /**
+         * 从root节点开始遍历，通过二分查找逐步向下找
+         * 第一次循环：从根节点开始，这个时候parent就是根节点，然后通过自定义的排序算法
+         * cpr.compare(key, t.key)比较传入的key和根节点的key值，如果传入的key<root.key，那么
+         * 继续在root的左子树中找，从root的左孩子节点（root.left）开始：如果传入的key>root.key,
+         * 那么继续在root的右子树中找，从root的右孩子节点（root.right）开始;如果恰好key==root.key，
+         * 那么直接根据root节点的value值即可。
+         * 后面的循环规则一样，当遍历到的当前节点作为起始节点，逐步往下找
+         *
+         * 需要注意的是：这里并没有对key是否为null进行判断，建议自己的实现Comparator时应该要考虑在内
+         */
+        do {
+            parent = t;
+            cmp = cpr.compare(key, t.key);
+            // 哨兵t往左子树移动
+            if (cmp < 0)
+                t = t.left;
+            // 哨兵t往右子树移动
+            else if (cmp > 0)
+                t = t.right;
+            else
+                return t.setValue(value);
+        } while (t != null);
+    }
+    else {
+        //从这里看出，当默认排序时，key值是不能为null的
+        if (key == null)
+            throw new NullPointerException();
+        @SuppressWarnings("unchecked")
+        Comparable<? super K> k = (Comparable<? super K>) key;
+        //这里的实现逻辑和上面一样，都是通过二分查找，就不再多说了
+        do {
+            parent = t;
+            cmp = k.compareTo(t.key);
+            if (cmp < 0)
+                t = t.left;
+            else if (cmp > 0)
+                t = t.right;
+            else
+                return t.setValue(value);
+        } while (t != null);
+    }
+    /**
+     * 能执行到这里，说明前面并没有找到相同的key,节点已经遍历到最后了，我们只需要new一个Entry放到
+     * parent下面即可，但放到左子节点上还是右子节点上，就需要按照红黑树的规则来。
+     */
+    Entry<K,V> e = new Entry<>(key, value, parent);
+    if (cmp < 0)
+        parent.left = e;
+    else
+        parent.right = e;
+    /**
+     * 节点加进去了，并不算完，我们在前面红黑树原理章节提到过，一般情况下加入节点都会对红黑树的结构造成
+     * 破坏，我们需要通过一些操作来进行自动平衡处置，如【变色】【左旋】【右旋】
+     */
+    fixAfterInsertion(e);
+    size++;
+    modCount++;
+    return null;
+}
+```
+
+##### 自平衡fixAfterInsertioin
+
+自平衡是针对新加入在叶子节点（NIL）上面的节点，需要对**加入的节点及树**做调整。
+
+```java
+	/** From CLR */
+    private void fixAfterInsertion(Entry<K,V> x) {
+        // 新插入的节点为红色节点(因为叶子节点是黑色)
+        x.color = RED;
+
+        // 我们知道父节点为黑色时，并不需要进行树结构调整，只有当父节点为红色时，才需要调整
+        while (x != null && x != root && x.parent.color == RED) {
+            // 如果父节点是左节点，对应上表中情况1和情况2
+            if (parentOf(x) == leftOf(parentOf(parentOf(x)))) {
+                Entry<K,V> y = rightOf(parentOf(parentOf(x)));
+                // 如果叔父节点为红色，对应于“父节点和叔父节点都为红色”，此时通过变色即可实现平衡
+            	// 此时父节点和叔父节点都设置为黑色，祖父节点设置为红色
+                if (colorOf(y) == RED) {
+                    setColor(parentOf(x), BLACK);
+                    setColor(y, BLACK);
+                    setColor(parentOf(parentOf(x)), RED);
+                    x = parentOf(parentOf(x));
+                } else {
+                    // 如果插入节点是黑色，插入的是右子节点，通过【左右节点旋转】（这里先进行父节点左旋）
+                    if (x == rightOf(parentOf(x))) {
+                        x = parentOf(x);
+                        rotateLeft(x);
+                    }
+                    // 设置父节点和祖父节点颜色
+                    setColor(parentOf(x), BLACK);
+                    setColor(parentOf(parentOf(x)), RED);
+                    // 进行祖父节点右旋（这里【变色】和【旋转】并没有严格的先后顺序，达成目的就行）
+                    rotateRight(parentOf(parentOf(x)));
+                }
+            } else {
+                // 父节点是右节点的情况
+                Entry<K,V> y = leftOf(parentOf(parentOf(x)));
+                // 对应于“父节点和叔父节点都为红色”，此时通过变色即可实现平衡
+                if (colorOf(y) == RED) {
+                    setColor(parentOf(x), BLACK);
+                    setColor(y, BLACK);
+                    setColor(parentOf(parentOf(x)), RED);
+                    x = parentOf(parentOf(x));
+                } else {
+                    // 如果插入节点是黑色，插入的是左子节点，通过【右左节点旋转】（这里先进行父节点右旋）
+                    if (x == leftOf(parentOf(x))) {
+                        x = parentOf(x);
+                        rotateRight(x);
+                    }
+                    setColor(parentOf(x), BLACK);
+                    setColor(parentOf(parentOf(x)), RED);
+                    // 进行祖父节点左旋（这里【变色】和【旋转】并没有严格的先后顺序，达成目的就行）
+                    rotateLeft(parentOf(parentOf(x)));
+                }
+            }
+        }
+        // 根节点必须为黑色
+        root.color = BLACK;
+    }
+```
+自平衡调整逻辑
+
+|         | 无需调整                   | <font color="red">【变色】</font>即可实现平衡 | <font color="red">【旋转+变色】</font>才可实现平衡           |
+| ------- | -------------------------- | --------------------------------------------- | ------------------------------------------------------------ |
+| 情况1： | 当父节点为黑色时插入子节点 | 空树插入根节点，将根节点红色变为黑色          | 父节点为红色左节点，叔父节点为黑色，插入左子节点，那么通过【左左节点旋转】 |
+| 情况2： | -                          | 父节点和叔父节点都为红色                      | 父节点为红色左节点，叔父节点为黑色，插入右子节点，那么通过【左右节点旋转】 |
+| 情况3： | -                          | -                                             | 父节点为红色右节点，叔父节点为黑色，插入左子节点，那么通过【右左节点旋转】 |
+| 情况4： | -                          | -                                             | 父节点为红色右节点，叔父节点为黑色，插入右子节点，那么通过【右右节点旋转】 |
+
+源码中通过 `rotateLeft` 进行**【左旋】**，通过 `rotateRight` 进行**【右旋】**。都非常类似，我们就看一下【左旋】的代码，【左旋】规则如下：<font color="red">**“逆时针旋转两个节点，让一个节点被其右子节点取代，而该节点成为右子节点的左子节点”。**</font>
+
+```java
+private void rotateLeft(Entry<K,V> p) {
+    if (p != null) {
+        /**
+         * 断开当前节点p与其右子节点的关联，重新将节点p的右子节点的地址指向节点p的右子节点的左子节点
+         * 这个时候节点r没有父节点
+         */
+        Entry<K,V> r = p.right;
+        p.right = r.left;
+        //将节点p作为节点r的父节点
+        if (r.left != null)
+            r.left.parent = p;
+        //将节点p的父节点和r的父节点指向同一处
+        r.parent = p.parent;
+        //p的父节点为null，则将节点r设置为root
+        if (p.parent == null)
+            root = r;
+        //如果节点p是左子节点，则将该左子节点替换为节点r
+        else if (p.parent.left == p)
+            p.parent.left = r;
+        //如果节点p为右子节点，则将该右子节点替换为节点r
+        else
+            p.parent.right = r;
+        //重新建立p与r的关系
+        r.left = p;
+        p.parent = r;
+    }
+}
+```
+
+图示过程：
+
+![RotateLeft](../../../../resources/drawable/TreeMap_RotateLeft.png)
+
+TODO...
+
+# 5. [Android ArrayMap](https://www.jianshu.com/p/1fb660978b14)
+
 ## 存储结构
 ![ArrayMap](../../../../resources/drawable/ArrayMap.png)
 ## 特性
@@ -667,12 +984,12 @@ final class LinkedEntryIterator extends LinkedHashIterator
 2. 与SparseArray不同的是，**`object[]`数组是hash值存放`int[]`数组的两倍大小**
 3. 通过二分查找key#hash值所在数组的`index`索引位置，乘以2即`object[]`数组中存放key的索引位置，并比对key和hash值是否匹配；不匹配则执行collision search???
 4. hash值由系统分配还是`hashcode()`方法来产生可自定义
-## 4.1 查找过程图示
+## 5.1 查找过程图示
 ![ArrayMap_Select](../../../../resources/drawable/ArrayMap_Select.png)
 
 
-# 5. ConcurrentHashMap
-## 5.1 JDK1.7
+# 6. ConcurrentHashMap
+## 6.1 JDK1.7
 ### 特性
 1. 采用锁分离技术，通过**分段锁**来保证同步及高效性能
 2. hash算法调整`static final int spread(int h) {
@@ -680,9 +997,9 @@ final class LinkedEntryIterator extends LinkedHashIterator
                 }`
 3. 
 
-## 5.2 [JDK1.8](http://note.youdao.com/noteshare?id=104834b20cd47e2ea2e57be29d9a9eb3&sub=1D3E0383156B4743A1598ED882B1BB81)
+## 6.2 [JDK1.8](http://note.youdao.com/noteshare?id=104834b20cd47e2ea2e57be29d9a9eb3&sub=1D3E0383156B4743A1598ED882B1BB81)
 JDK1.8的实现已经摒弃了Segment的概念，而是直接用**Node数组**+**链表**+**红黑树**的数据结构来实现
-### 5.2.1 重要属性
+### 6.2.1 重要属性
 ```java
 // node数组最大容量：2^30=1073741824
 private static final int MAXIMUM_CAPACITY = 1 << 30;
@@ -720,7 +1037,7 @@ transient volatile Node<K,V>[] table;
 private transient volatile int sizeCtl;
 
 ```
-### 5.2.2 Node节点的定义
+### 6.2.2 Node节点的定义
 
 Node的数据结构通过`next`可形成链表，只**允许查找，不允许修改**
 
@@ -778,11 +1095,11 @@ static class Node<K,V> implements Map.Entry<K,V> {
     }
 }
 ```
-### 5.2.3 TreeNode和TreeBin
+### 6.2.3 TreeNode和TreeBin
 
 红黑树相关的两个数据结构定义
 
-#### 5.2.3.1 TreeNode-树形结构节点
+#### 6.2.3.1 TreeNode-树形结构节点
 
 TreeNode继承Node，但是**数据结构换成了二叉树结构**，它是**红黑树的数据的存储结构**，用于红黑树中存储数据，当**链表的节点数大于8**时会转换成红黑树的结构，他就是**通过TreeNode作为存储结构代替Node**来转换成黑红树。
 
@@ -856,7 +1173,7 @@ static final class TreeNode<K,V> extends Node<K,V> {
     }
 }
 ```
-#### 5.2.3.2 TreeBin-存储树形结构的容器，即红黑树的桶
+#### 6.2.3.2 TreeBin-存储树形结构的容器，即红黑树的桶
 
 TreeBin从字面含义中可以理解为**存储树形结构的容器**，而树形结构就是指TreeNode，所以TreeBin就是封装TreeNode的容器，它*提供转换黑红树的一些**条件**和**锁**的控制*，部分源码结构如下。
 
@@ -927,10 +1244,10 @@ TreeBin从字面含义中可以理解为**存储树形结构的容器**，而树
     }
 ```
 
-### 5.2.4 构造器
+### 6.2.4 构造器
 
 默认无参构造器里啥都没做`public ConcurrentHashMap() { }` 
-### 5.2.5 put操作
+### 6.2.5 put操作
 1. put操作通过`putVal(K key, V value, boolean onlyIfAbsent)`方法实现
 
 2. 注意到：<font color="red">**不允许key和value为空值**</font>，否则抛出空指针`NullPointerException`异常
@@ -1049,7 +1366,7 @@ final V putVal(K key, V value, boolean onlyIfAbsent) {
 }
 
 ```
-#### 5.2.5.1 细节分析
+#### 6.2.5.1 细节分析
 
 在上述put操作的第五步，符合条件会进行初始化操作，如下：
 
@@ -1410,7 +1727,7 @@ final V putVal(K key, V value, boolean onlyIfAbsent) {
     }
 ```
 
-### 5.2.6 get操作
+### 6.2.6 get操作
 
 1. **计算hash值，定位到该table索引位置**，如果是**首节点符合就返回**
 
@@ -1450,7 +1767,7 @@ final V putVal(K key, V value, boolean onlyIfAbsent) {
     }
 ```
 
-### 5.2.7 size方法
+### 6.2.7 size方法
 
 在JDK1.8版本中，对于size的计算，在**扩容**和**`addCount()`方法**就已经有处理了，JDK1.7是在调用size()方法才去计算，其实<font color="red">*在并发集合中去计算size是没有多大的意义的，因为size是**实时在变**的，只能计算某一刻的大小，但是某一刻太快了，人的感知是一个时间段，所以并不是很精确*。</font>
 
@@ -1477,7 +1794,7 @@ final V putVal(K key, V value, boolean onlyIfAbsent) {
     }
 ```
 
-### 5.2.8 总结
+### 6.2.8 总结
 
 其实可以看出JDK1.8版本的ConcurrentHashMap的数据结构已经接近HashMap，相对而言，ConcurrentHashMap只是增加了**同步的操作来控制并发**，从JDK1.7版本的**ReentrantLock+Segment+HashEntry**，到JDK1.8版本中**synchronized+CAS+HashEntry+红黑树**,相对而言，总结如下思考：
 
@@ -1489,8 +1806,8 @@ final V putVal(K key, V value, boolean onlyIfAbsent) {
 
 4. JDK1.8为什么使用<font color="red">**内置锁synchronized来代替重入锁ReentrantLock**</font>，我觉得有以下几点：
 
-   - 因为粒度降低了，在**相对而言的低粒度加锁方式，synchronized并不比ReentrantLock差**，在粗粒度加锁中**ReentrantLock可能通过Condition来控制各个低粒度的边界**，更加的灵活，而在低粒度中，Condition的优势就没有了
+ - 因为粒度降低了，在**相对而言的低粒度加锁方式，synchronized并不比ReentrantLock差**，在粗粒度加锁中**ReentrantLock可能通过Condition来控制各个低粒度的边界**，更加的灵活，而在低粒度中，Condition的优势就没有了
 
-   - JVM的开发团队从来都没有放弃synchronized，而且基**于JVM的synchronized优化空间更大，使用内嵌的关键字比使用API更加自然**
+ - JVM的开发团队从来都没有放弃synchronized，而且基**于JVM的synchronized优化空间更大，使用内嵌的关键字比使用API更加自然**
 
-   - 在大量的数据操作下，对于**JVM的内存压力，基于API的ReentrantLock会开销更多的内存**，虽然不是瓶颈，但是也是一个选择依据
+ - 在大量的数据操作下，对于**JVM的内存压力，基于API的ReentrantLock会开销更多的内存**，虽然不是瓶颈，但是也是一个选择依据
