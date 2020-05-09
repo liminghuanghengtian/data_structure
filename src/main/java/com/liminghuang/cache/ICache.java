@@ -14,9 +14,9 @@ package com.liminghuang.cache;
  */
 public interface ICache<T> {
     
-    void put(String key, T t);
+    void put(Object key, T t);
     
-    T get(String key);
+    T get(Object key);
     
-    T remove(String key);
+    T remove(Object key);
 }

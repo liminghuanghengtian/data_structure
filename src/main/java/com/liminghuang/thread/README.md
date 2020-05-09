@@ -1,17 +1,18 @@
-# ThreadLocal
-ThreadLocal内部定义的`ThreadLocalMap`结构类似`HashMap`内部的存储结构，通过数组的方式存储，节点结构`Entry`是继承弱应用（仅有一个弱引用的话，GC时会被回收），泛型类型是ThreadLocal。ThreadLocal主要**包装**了`Thread.threadLocals`成员属性的操作.
+# 1. ThreadLocal
+ThreadLocal内部定义的`ThreadLocalMap`结构类似`HashMap`内部的存储结构，通过**数组**的方式存储，节点`Entry`结构上继承了弱引用（仅有一个弱引用的话，GC时会被回收）。ThreadLocal主要是对`Thread#threadLocals`这个成员属性相关操作的**包装**.
 
 ## 特性
-- 默认初始容量`INITIAL_CAPACITY=16`，且扩容的话需要指数倍的增长
-- 扩容的条件阈值是`len * 2 / 3;`
-- 存储key是**当前的ThreadLocal对象**，hash值计算方式：`firstKey.threadLocalHashCode`，index计算方式同hashMap一致：`hash() & (len -1)`
+- 默认初始容量`INITIAL_CAPACITY=16`，且扩容的话需要**指数倍的增长**
+- 扩容的条件阈值是`len * 2 / 3`，这点和HashMap`len * 3 / 4 `略有区别
+- 存储key是**当前的ThreadLocal实例对象**，hash计算方式：`firstKey.threadLocalHashCode`，index计算方式同HashMap一致，采用位与运算：`hash() & (len -1)`
 - 根据如下hash值的获取方式，不会出现碰撞的情况，所以`Entry`节点未设计链表或者树的结构
 
 
-## 1. 存储节点`Entry`设计
+## 1.1 存储节点`Entry`设计
 Entry节点是一个弱引用，如果存储的内容在内存中仅此一个弱引用的话，则会在GC时被回收
 ```java
 static class Entry extends WeakReference<ThreadLocal<?>> {
+    
     /** The value associated with this ThreadLocal. */
     Object value;
 
@@ -21,7 +22,7 @@ static class Entry extends WeakReference<ThreadLocal<?>> {
     }
 }
 ```
-## 2. ThreadLocal中的一个常量和几个静态属性
+## 1.2 ThreadLocal中的一个常量和几个静态属性
 ```java
 /**
  * 这个常量作为线程变量存储key-ThreadLocal的hash值
@@ -47,7 +48,7 @@ private static int nextHashCode() {
     return nextHashCode.getAndAdd(HASH_INCREMENT);
 }
 ```
-## 2. ThreadLocalMap构造
+## 1.3 ThreadLocalMap构造
 ```java
 /**
  * The initial capacity -- MUST be a power of two.
@@ -67,12 +68,12 @@ ThreadLocalMap(ThreadLocal<?> firstKey, Object firstValue) {
     setThreshold(INITIAL_CAPACITY);
 }
 ```
-### 2.1 何时构造
+### 1.3.1 何时构造
 在`createMap`方法内去构造`ThreadLocalMap`的实例对象，以在Thread内存储线程变量值
 1. 设置值的时候 `public void ThreadLocal#set()`
 2. 设置初始值的时候 `private T ThreadLocal#setInitialValue()`
 
-### 2.2 get操作及初始值
+### 1.3.2 get操作及初始值
 1. `get`操作是从当前Thread内存空间获取其`threadLocals`成员属性
 2. `threadLocals`成员属性引用为空，`ThreadLocalMap`的空间还未建立
 ```java
@@ -154,7 +155,7 @@ private Entry getEntryAfterMiss(ThreadLocal<?> key, int i, Entry e) {
 }
 ```
 
-### 2.3 set操作
+### 1.3.3 set操作
 ```java
 private void set(ThreadLocal<?> key, Object value) {
 
@@ -195,10 +196,17 @@ private void set(ThreadLocal<?> key, Object value) {
 }
 ```
 
-# 无锁CAS保证原子性
-原理解释：CAS全称（Compare Ans Swap），是一种用于在多线程环境下实现同步功能的机制。CAS 操作包含三个操作数 -- 内存位置、预期数值和新值。CAS 的实现逻辑是将内存位置处的数值与预期数值相比较，若相等，则将内存位置处的值替换为新值。若不相等，则不做任何操作。
+# 2. 无锁CAS保证原子性
+原理解释：CAS全称（Compare And Swap），是一种用于在多线程环境下实现同步功能的机制。CAS 操作包含三个操作数 -- 内存位置、预期数值和新值。CAS 的实现逻辑是将内存位置处的数值与预期数值相比较，若相等，则将内存位置处的值替换为新值。若不相等，则不做任何操作。
 CAS在java层没有直接实现，是通过unsafe类进入native实现的。
-ABA问题处理措施是对每一次 CAS 操作设置版本号。
+ABA问题处理措施是对**每一次 CAS 操作设置版本号**。
 
-# yield
+# 3. yield操作
 yield()方法主要是为了保障线程间调度的连续性，防止某个线程一直长时间占用cpu资源。但是他的使用应该基于详细的分析和测试。这个方法一般不推荐使用，它主要用于debug和测试程序，用来减少bug以及对于并发程序结构的设计。
+
+# 4. volatile关键字
+
+原理和实现
+
+
+

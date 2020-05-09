@@ -18,30 +18,30 @@ import sun.misc.LRUCache;
  */
 public class XCache<T> implements ICache<T> {
     
-    transient LinkedHashMap<String, Object> cacheMap;
+    transient LinkedHashMap<Object, T> cacheMap;
     
     public XCache() {
         cacheMap = new LinkedHashMap<>();
     }
     
-    public void put(String key, T t) {
+    public void put(Object key, T t) {
         if (key != null) {
             cacheMap.put(key, t);
         }
     }
     
-    public T get(String key) {
-        Object t;
+    public T get(Object key) {
+        T t;
         if (key != null) {
-            return (t = cacheMap.get(key)) == null ? null : (T) t;
+            return (t = cacheMap.get(key)) == null ? null : t;
         }
         return null;
     }
     
-    public T remove(String key) {
-        Object t;
+    public T remove(Object key) {
+        T t;
         if (key != null) {
-            return (t = cacheMap.remove(key)) == null ? null : (T) t;
+            return (t = cacheMap.remove(key)) == null ? null : t;
         }
         return null;
     }

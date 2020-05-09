@@ -15,23 +15,23 @@ import sun.misc.LRUCache;
  * @author Adaministrator
  */
 public class TCache<T> implements ICache<T> {
-    transient LRUCache<String, Object> cache;
+    transient LRUCache<Object, Object> cache;
     
     public TCache() {
         cache = new MyLRUCache<>(16);
     }
     
     @Override
-    public void put(String key, T t) {
+    public void put(Object key, T t) {
     }
     
     @Override
-    public T get(String key) {
+    public T get(Object key) {
         return null;
     }
     
     @Override
-    public T remove(String key) {
+    public T remove(Object key) {
         return null;
         
     }
